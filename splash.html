@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="splash" class="view active">
+    <div class="splash-center">
+      <div class="app-icon">
+        <img src="assets/logo.png" alt="镜点">
+      </div>
+      <div class="app-name">镜点</div>
+      <img class="slogan-img" src="assets/slogan.png" alt="太好拍了吧">
+    </div>
+    <div class="splash-bottom">
+      <div class="loading-track">
+        <div class="loading-bar"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <div class="copyright">@ CHEN QI QI'S PROGRAM</div>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('splash');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) sb.classList.add('show');
+      setTimeout(function() { goPage('login'); }, 2500);
+    })();
+  </script>
+</body>
+</html>

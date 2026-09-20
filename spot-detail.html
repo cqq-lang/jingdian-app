@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 机位详情</title>
+<link rel="stylesheet" href="assets/common.css">
+<style>
+  /* 页面整体背景：米白色 */
+  #spot-detail {
+    background: #F5F2ED;
+  }
+  .spot-scroll {
+    background: #F5F2ED;
+  }
+  /* 状态栏：默认透明背景+白色文字，滚动后变白背景+黑文字 */
+  .spot-status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    background: transparent;
+    z-index: 9999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    pointer-events: none;
+    transition: background 0.25s ease;
+  }
+  .spot-status-bar .time {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    transition: color 0.25s ease;
+  }
+  .spot-status-bar .icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    filter: brightness(0) invert(1);
+    transition: filter 0.25s ease;
+  }
+  #spot-detail.scrolled .spot-status-bar .icons {
+    filter: none;
+  }
+  /* 滚动后状态栏：白色背景+黑色文字 */
+  #spot-detail.scrolled .spot-status-bar {
+    background: #fff;
+  }
+  #spot-detail.scrolled .spot-status-bar .time {
+    color: #1a1a1a;
+  }
+
+  /* 吸顶导航栏：滚动到标题时显示 */
+  .spot-sticky-header {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    box-sizing: border-box;
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    border-bottom: 1px solid #eee;
+  }
+  #spot-detail.scrolled .spot-sticky-header {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .spot-sticky-back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 4px;
+  }
+  .spot-sticky-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* 图片上的返回/分享按钮：滚动后隐藏 */
+  .spot-hero-back-fixed {
+    position: absolute;
+    top: 52px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+  .spot-hero-share-fixed {
+    position: absolute;
+    top: 52px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+  #spot-detail.scrolled .spot-hero-back-fixed,
+  #spot-detail.scrolled .spot-hero-share-fixed {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 拍摄技巧弹窗 */
+  .tips-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .tips-modal-overlay.active {
+    display: flex;
+  }
+  .tips-modal {
+    width: 100%;
+    max-width: 390px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    height: 520px;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .tips-modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 10px auto 0;
+  }
+  .tips-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    position: relative;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .tips-modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .tips-modal-supplement {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+  }
+  .tips-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .tips-modal-tip-card {
+    background: rgba(255, 130, 12, 0.4);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .tips-modal-tip-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .tips-modal-tip-content {
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  .tips-modal-tip-content p {
+    margin: 0 0 4px 0;
+  }
+  .tips-modal-image {
+    width: 220px;
+    height: auto;
+    border-radius: 12px;
+    margin: 0 0 20px 0;
+    display: block;
+  }
+  .tips-modal-section {
+    margin-bottom: 16px;
+  }
+  .tips-modal-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .tips-modal-section-content {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
+  }
+  .tips-modal-section-content p {
+    margin: 0 0 6px 0;
+  }
+  .tips-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .tips-modal-ai-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #999;
+  }
+  .tips-modal-ai-summary img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+  }
+  .tips-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .tips-modal-action {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+  }
+
+  /* 图文步导弹窗 */
+  .guide-popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .guide-popup-overlay.active {
+    display: flex;
+  }
+  .guide-popup {
+    width: 375px;
+    height: 520px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    flex-direction: column;
+    animation: guidePopupSlideUp 0.3s ease-out;
+  }
+  @keyframes guidePopupSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  .guide-popup-drag {
+    width: 36px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 10px auto 0;
+  }
+  .guide-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px 8px;
+    position: relative;
+  }
+  .guide-popup-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .guide-popup-supplement {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #999;
+    font-size: 13px;
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+  }
+  .guide-popup-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+  }
+  .guide-step {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+  }
+  .guide-step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #FF820C;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .guide-step-content {
+    flex: 1;
+  }
+  .guide-step-text {
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .guide-step-img {
+    width: 220px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .guide-step-img img {
+    width: 220px;
+    display: block;
+    object-fit: cover;
+  }
+  .guide-end {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FF820C;
+    text-align: center;
+    padding: 16px 0;
+  }
+  /* 从图片详情页返回时：弹窗首帧就是打开的样子，不播放弹出动画 */
+  html.restore-tips #tipsModalOverlay,
+  html.restore-guide #guidePopupOverlay {
+    display: flex;
+  }
+  html.restore-tips .tips-modal,
+  html.restore-guide .guide-popup {
+    animation: none !important;
+  }
+</style>
+<script>
+  // 返回时先给 html 打标记，保证弹窗在第一帧就是打开状态，避免看到它重新弹出来
+  (function() {
+    var open = '';
+    try { open = new URLSearchParams(window.location.search).get('open') || ''; } catch (e) { open = ''; }
+    if (open === 'tips') document.documentElement.classList.add('restore-tips');
+    if (open === 'guide') document.documentElement.classList.add('restore-guide');
+  })();
+</script>
+</head>
+<body>
+  <div class="phone">
+    <div id="spot-detail" class="view">
+      <!-- 固定层：状态栏 -->
+      <div class="spot-status-bar">
+        <span class="time">9:00</span>
+        <div class="icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+        </div>
+      </div>
+
+      <!-- 吸顶导航栏：滚动到标题时显示 -->
+      <div class="spot-sticky-header">
+        <div class="spot-sticky-back" id="spotStickyBack">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="spot-sticky-title">晓霞弄-小巷文字墙及望仙阁</span>
+      </div>
+
+      <!-- 固定层：图片上的返回按钮 -->
+      <div class="spot-hero-back-fixed" id="spotBackBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <!-- 固定层：图片上的分享按钮 -->
+      <div class="spot-hero-share-fixed">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12v-1a5 5 0 0 1 5-5h11m0 0l-3.5-3.5M20 6l-3.5 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <!-- 内容滚动区 -->
+      <div class="spot-scroll" id="spotScroll">
+        <!-- 顶部图片轮播 -->
+        <div class="spot-hero">
+          <div class="spot-hero-images">
+            <img src="assets/xiaoxianong.jpg" class="spot-hero-img active">
+            <img src="assets/xiaoxianong2.jpg" class="spot-hero-img">
+            <img src="assets/xiaoxianong3.jpg" class="spot-hero-img">
+          </div>
+          <div class="spot-hero-count">相册 1/3</div>
+          <div class="spot-hero-click-left"></div>
+          <div class="spot-hero-click-right"></div>
+        </div>
+
+        <!-- 标题 -->
+        <h1 class="spot-title" id="spotTitle">晓霞弄-小巷文字墙及望仙阁</h1>
+
+        <!-- 创建者 -->
+        <div class="spot-creator">
+          <img src="assets/avatar2.png" class="spot-creator-avatar">
+          <span class="spot-creator-name">城市漫游者</span>
+          <span class="spot-creator-arrow" onclick="showToast('创作者主页演示中')">创建 ></span>
+        </div>
+
+        <!-- 拍摄技巧卡片 -->
+        <div class="spot-tip-card" onclick="openTipsModal()">
+          <img src="assets/camera-icon.png" class="spot-tip-icon">
+          <span class="spot-tip-label">拍摄技巧</span>
+          <span class="spot-tip-text" id="spotTipText">机位:站小巷入口低处，平拍角度。构<br>图:石板路+两侧建筑做引导线，引视线到望<span class="spot-tip-more">仙阁塔顶，利用光影对比增强纵深感。</span></span>
+          <span class="spot-tip-expand" id="spotTipExpand">展开 ></span>
+        </div>
+
+        <!-- 图文步导 + 距离 -->
+        <div class="spot-nav-row">
+          <div class="spot-guide-card" onclick="openGuidePopup()">
+            <div class="spot-guide-info">
+              <div class="spot-guide-title"><span>图文步导</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="card-arrow"><path d="M9 18l6-6-6-6" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="spot-guide-desc">精准抵达机位</div>
+            </div>
+            <img src="assets/xiaoxianong3.jpg" class="spot-guide-thumb">
+          </div>
+          <div class="spot-distance-card" onclick="goPage('navigation')">
+            <div class="spot-distance-title"><span>13.4km 距机位驾车约18分钟</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="card-arrow"><path d="M9 18l6-6-6-6" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="spot-distance-addr">上城区十五奎巷与中山南路交叉口</div>
+          </div>
+        </div>
+
+        <!-- 全部讨论 -->
+        <div class="spot-discussions">
+          <div class="spot-discussions-header">
+            <span>全部讨论</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <div class="spot-discussion-item">
+            <img src="assets/avatar6.png" class="spot-discussion-avatar">
+            <div class="spot-discussion-content">
+              <div class="spot-discussion-top">
+                <span class="spot-discussion-user">偷一颗甜橙</span>
+                <span class="spot-discussion-like" onclick="toggleSpotLike(this)">♡ 4</span>
+              </div>
+              <p class="spot-discussion-text">晓霞弄这条小巷一定要下午四点左右来！侧逆光打在巷子里，望仙阁做背景拍背影巨出片。</p>
+              <div class="spot-discussion-images">
+                <img src="assets/xiaoxianong.jpg">
+                <img src="assets/xiaoxianong2.jpg">
+                <img src="assets/xiaoxianong3.jpg">
+              </div>
+              <span class="spot-discussion-time">05-12 浙江</span>
+              <span class="spot-discussion-source" onclick="showToast('笔记详情演示中')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z" stroke="#999" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                来自笔记:杭州老城漫步 | 晓霞弄松弛感小巷 >
+              </span>
+            </div>
+          </div>
+
+          <div class="spot-discussion-item">
+            <img src="assets/avatar7.png" class="spot-discussion-avatar">
+            <div class="spot-discussion-content">
+              <div class="spot-discussion-top">
+                <span class="spot-discussion-user">逆光手记</span>
+                <span class="spot-discussion-like" onclick="toggleSpotLike(this)">♡ 4</span>
+              </div>
+              <p class="spot-discussion-text">提醒大家，站巷子低处往高处仰拍，石板路的引导线直接把视线带到望仙阁，这个构图亲测好用！</p>
+              <div class="spot-discussion-images">
+                <img src="assets/xiaoxianong.jpg">
+                <img src="assets/xiaoxianong2.jpg">
+                <img src="assets/xiaoxianong3.jpg">
+              </div>
+              <span class="spot-discussion-time">05-12 浙江</span>
+              <span class="spot-discussion-source" onclick="showToast('笔记详情演示中')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z" stroke="#999" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                来自笔记:吴山周边 | 藏在闹市的江南老巷 >
+              </span>
+            </div>
+          </div>
+
+          <div class="spot-discussion-item">
+            <img src="assets/avatar8.png" class="spot-discussion-avatar">
+            <div class="spot-discussion-content">
+              <div class="spot-discussion-top">
+                <span class="spot-discussion-user">床边摄影师</span>
+                <span class="spot-discussion-like" onclick="toggleSpotLike(this)">♡ 4</span>
+              </div>
+              <p class="spot-discussion-text">适合慢悠悠散步的小巷，不用赶行程，随手一拍都很有江南老街的感觉。</p>
+              <div class="spot-discussion-images">
+                <img src="assets/xiaoxianong.jpg">
+                <img src="assets/xiaoxianong2.jpg">
+                <img src="assets/xiaoxianong3.jpg">
+              </div>
+              <span class="spot-discussion-time">05-12 浙江</span>
+              <span class="spot-discussion-source" onclick="showToast('笔记详情演示中')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z" stroke="#999" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                来自笔记:杭州老城区小众散步路线 >
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部操作栏 -->
+      <div class="spot-bottom-bar">
+        <div class="spot-comment-input">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#999" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>加入讨论</span>
+        </div>
+        <button class="spot-favorite-btn" id="spotFavoriteBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" id="spotStarIcon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span>收藏机位</span>
+        </button>
+      </div>
+
+      <!-- 拍摄技巧弹窗 -->
+      <div class="tips-modal-overlay" id="tipsModalOverlay" onclick="closeTipsModal(event)">
+        <div class="tips-modal" onclick="event.stopPropagation()">
+          <div class="tips-modal-handle"></div>
+          <div class="tips-modal-header">
+            <div class="tips-modal-title">拍摄技巧</div>
+            <div class="tips-modal-supplement" onclick="showToast('补充功能演示中')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="#999" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              补充
+            </div>
+          </div>
+          <div class="tips-modal-body">
+            <div class="tips-modal-tip-card">
+              <div class="tips-modal-tip-title">
+                <img src="assets/camera-flash.png" alt="相机" style="width:16px;height:16px;">
+                <span>拍摄技巧</span>
+              </div>
+              <div class="tips-modal-tip-content">
+                <p><strong>机位:</strong>站小巷入口低处，平拍角度。</p>
+                <p><strong>构图:</strong>石板路+两侧建筑做引导线，引视线到望仙阁。</p>
+                <p><strong>前景与焦点:</strong>前景左棕榈叶右绿植，取小巷全貌+白墙黑瓦+望仙阁，标准焦段/手机2x。</p>
+              </div>
+            </div>
+            <img src="assets/tips-example.jpg" alt="拍摄示例" class="tips-modal-image" onclick="openSpotImageView('photo-detail-tips.html')" style="cursor:pointer;">
+            <div class="tips-modal-section">
+              <div class="tips-modal-section-title">出行攻略</div>
+              <div class="tips-modal-section-content">
+                <p>· 最佳游览时间:晚上逛河坊街、南宋御街更有氛围。</p>
+              </div>
+            </div>
+            <div class="tips-modal-section">
+              <div class="tips-modal-section-title">经验建议</div>
+              <div class="tips-modal-section-content">
+                <p>· 拍摄时间:建议晚上六点后，夏天蓝调亮灯氛围好，白天也可以。</p>
+                <p>· 拍摄对象:空景可随时拍，男女生都好拍。</p>
+                <p>· 拍摄点及周边:拍摄点在望仙阁附近晓霞弄，巴尔干客栈、吴山景区、十五奎巷可逛拍。</p>
+              </div>
+            </div>
+            <div class="tips-modal-section">
+              <div class="tips-modal-section-title">穿搭建议</div>
+              <div class="tips-modal-section-content">
+                <p>· 学生风:推荐学生风妆造，整体更显元气活力，是拍摄加分项。</p>
+              </div>
+            </div>
+          </div>
+          <div class="tips-modal-footer">
+            <div class="tips-modal-ai-summary">
+              <img src="assets/logo.png" alt="AI">
+              <span>AI总结2条优质信息生成</span>
+              <span>></span>
+            </div>
+            <div class="tips-modal-actions">
+              <div class="tips-modal-action" onclick="showToast('点赞功能演示中')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="tips-modal-action" onclick="showToast('点踩功能演示中')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="transform: rotate(180deg);"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <!-- 图文步导弹窗 -->
+  <div class="guide-popup-overlay" id="guidePopupOverlay" onclick="closeGuidePopup()">
+    <div class="guide-popup" onclick="event.stopPropagation()">
+      <!-- 顶部拖拽条 -->
+      <div class="guide-popup-drag"></div>
+      <!-- 标题栏 -->
+      <div class="guide-popup-header">
+        <div class="guide-popup-title">图文步导</div>
+        <div class="guide-popup-supplement">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>补充</span>
+        </div>
+      </div>
+      <!-- 内容区域 -->
+      <div class="guide-popup-content">
+        <!-- 步骤1 -->
+        <div class="guide-step">
+          <div class="guide-step-number">1</div>
+          <div class="guide-step-content">
+            <div class="guide-step-text">从鼓楼公车站下车后，往回走。</div>
+            <div class="guide-step-img">
+              <img src="assets/guide_2.jpg" alt="步骤1" onclick="openSpotImageView('photo-detail-guide.html?index=1')" style="cursor:pointer;">
+            </div>
+          </div>
+        </div>
+        <!-- 步骤2 -->
+        <div class="guide-step">
+          <div class="guide-step-number">2</div>
+          <div class="guide-step-content">
+            <div class="guide-step-text">步行100米后，左转进入十五奎巷。</div>
+            <div class="guide-step-img">
+              <img src="assets/guide_3.jpg" alt="步骤2" onclick="openSpotImageView('photo-detail-guide.html?index=2')" style="cursor:pointer;">
+            </div>
+          </div>
+        </div>
+        <!-- 步骤3 -->
+        <div class="guide-step">
+          <div class="guide-step-number">3</div>
+          <div class="guide-step-content">
+            <div class="guide-step-text">一直直行。</div>
+            <div class="guide-step-img">
+              <img src="assets/guide_1.jpg" alt="步骤3" onclick="openSpotImageView('photo-detail-guide.html?index=3')" style="cursor:pointer;">
+            </div>
+          </div>
+        </div>
+        <!-- 步骤4 -->
+        <div class="guide-step">
+          <div class="guide-step-number">4</div>
+          <div class="guide-step-content">
+            <div class="guide-step-text">随后150米，进入晓霞弄，进入弄堂100米到巴尔干客栈，上台阶就可以看到望仙阁。</div>
+            <div class="guide-step-img">
+              <img src="assets/guide_4.jpg" alt="步骤4" onclick="openSpotImageView('photo-detail-guide.html?index=4')" style="cursor:pointer;">
+            </div>
+          </div>
+        </div>
+        <!-- 结尾 -->
+        <div class="guide-end">恭喜你成功找到机位！</div>
+      </div>
+    </div>
+  </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    // 主动打开弹窗时让弹出动画重新播放一次
+    function restartPopupAnimation(el) {
+      if (!el) return;
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    }
+
+    // 图文步导弹窗
+    function openGuidePopup() {
+      document.documentElement.classList.remove('restore-guide');
+      restartPopupAnimation(document.querySelector('.guide-popup'));
+      var overlay = document.getElementById('guidePopupOverlay');
+      if (overlay) {
+        overlay.classList.add('active');
+      }
+    }
+    function closeGuidePopup() {
+      var overlay = document.getElementById('guidePopupOverlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      document.documentElement.classList.remove('restore-guide');
+    }
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('spot-detail');
+      if (current) current.classList.add('active');
+      if (typeof initSpotHero === 'function') initSpotHero();
+
+      // 滚动吸顶：标题到达顶部时显示白色导航栏
+      var scrollEl = document.getElementById('spotScroll');
+      var titleEl = document.getElementById('spotTitle');
+      var detailEl = document.getElementById('spot-detail');
+      var stickyBack = document.getElementById('spotStickyBack');
+
+      var creatorEl = document.querySelector('.spot-creator');
+      if (scrollEl && titleEl && detailEl && creatorEl) {
+        // 城市漫游者的 offsetTop（相对于滚动容器）
+        var creatorTop = creatorEl.offsetTop;
+        // 触发阈值：城市漫游者到达顶部时显示标题
+        var threshold = creatorTop - 92;
+
+        scrollEl.addEventListener('scroll', function() {
+          if (scrollEl.scrollTop >= threshold) {
+            detailEl.classList.add('scrolled');
+          } else {
+            detailEl.classList.remove('scrolled');
+          }
+        });
+      }
+
+      // 吸顶导航栏的返回按钮
+      if (stickyBack) {
+        stickyBack.addEventListener('click', function() {
+          if (typeof goBack === 'function') goBack('home');
+        });
+      }
+    })();
+
+    // 拍摄技巧弹窗
+    window.openTipsModal = function() {
+      document.documentElement.classList.remove('restore-tips');
+      restartPopupAnimation(document.querySelector('.tips-modal'));
+      document.getElementById('tipsModalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeTipsModal = function(e) {
+      if (e && e.target !== document.getElementById('tipsModalOverlay')) return;
+      document.getElementById('tipsModalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+      document.documentElement.classList.remove('restore-tips');
+    };
+
+    // 打开图片详情页之前，先记住当前页面的滚动位置
+    window.openSpotImageView = function(url) {
+      try {
+        var sc = document.getElementById('spotScroll');
+        var tipsBody = document.querySelector('.tips-modal-body');
+        var guideBody = document.querySelector('.guide-popup-content');
+        sessionStorage.setItem('jingdian_view_state', JSON.stringify({
+          spotScroll: sc ? sc.scrollTop : 0,
+          tipsScroll: tipsBody ? tipsBody.scrollTop : 0,
+          guideScroll: guideBody ? guideBody.scrollTop : 0
+        }));
+      } catch (e) {}
+      goUrl(url);
+    };
+
+    // 从图片详情页返回时，弹窗直接以打开状态出现，并还原滚动位置
+    (function() {
+      var openFlag = '';
+      try {
+        openFlag = new URLSearchParams(window.location.search).get('open') || '';
+      } catch (e) {
+        openFlag = '';
+      }
+      if (openFlag !== 'tips' && openFlag !== 'guide') return;
+
+      var overlay = document.getElementById(openFlag === 'tips' ? 'tipsModalOverlay' : 'guidePopupOverlay');
+      if (overlay) overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      var saved = null;
+      try {
+        saved = JSON.parse(sessionStorage.getItem('jingdian_view_state') || 'null');
+      } catch (e) {
+        saved = null;
+      }
+      if (!saved) return;
+      try { sessionStorage.removeItem('jingdian_view_state'); } catch (e) {}
+
+      var applyScroll = function() {
+        var sc = document.getElementById('spotScroll');
+        if (sc && typeof saved.spotScroll === 'number') sc.scrollTop = saved.spotScroll;
+        var tipsBody = document.querySelector('.tips-modal-body');
+        if (tipsBody && typeof saved.tipsScroll === 'number') tipsBody.scrollTop = saved.tipsScroll;
+        var guideBody = document.querySelector('.guide-popup-content');
+        if (guideBody && typeof saved.guideScroll === 'number') guideBody.scrollTop = saved.guideScroll;
+      };
+      applyScroll();
+      window.addEventListener('load', function() { requestAnimationFrame(applyScroll); });
+    })();
+
+  </script>
+
+</body>
+</html>

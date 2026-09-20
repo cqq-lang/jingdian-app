@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片详情</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <style>
+    /* 图片详情页样式 */
+    .photo-detail-page {
+      width: 375px;
+      height: 812px;
+      background: #000;
+      border-radius: 40px;
+      border: 8px solid #1a1a1a;
+      overflow: hidden;
+      position: relative;
+      margin: 20px auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: content-box;
+    }
+
+    /* 状态栏 */
+    .photo-status-bar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      background: transparent;
+    }
+
+    .photo-status-bar .status-time {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .photo-status-bar .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 图片容器 */
+    .photo-container {
+      flex: 1;
+      width: 375px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: hidden;
+      position: relative;
+      touch-action: none;
+    }
+
+    /* 图片轮播 */
+    .photo-slider {
+      display: flex;
+      width: auto;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .photo-slide {
+      width: 375px;
+      min-width: 375px;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-slide img {
+      width: 375px;
+      height: 500px;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* 底部区域 */
+    .photo-bottom-area {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 16px 30px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* 滚动条指示器 */
+    .photo-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .photo-indicator-dot {
+      flex: 1;
+      min-width: 0;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.3);
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .photo-indicator-dot.active {
+      background: #fff;
+    }
+
+    /* 右上角索引显示 */
+    .photo-index {
+      position: absolute;
+      top: 110px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      z-index: 10;
+    }
+    /* 关闭按钮 */
+    .photo-close-btn {
+      width: 46px;
+      height: 32px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .photo-close-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body style="background: #f0f0f0; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+  <div class="photo-detail-page">
+    <!-- 状态栏 -->
+    <div class="photo-status-bar">
+      <span class="status-time">9:00</span>
+      <div class="status-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#fff"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#fff"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#fff"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#fff"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#fff"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#fff" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#fff"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#fff" opacity="0.4"/></svg>
+      </div>
+    </div>
+
+    <!-- 右上角索引显示 -->
+    <div class="photo-index" id="photoIndex">1/8</div>
+
+    <!-- 图片容器 -->
+    <div class="photo-container" id="photoContainer">
+      <div class="photo-slider" id="photoSlider">
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_1.jpg" alt="晓霞弄照片 1"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_2.jpg" alt="晓霞弄照片 2"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_3.jpg" alt="晓霞弄照片 3"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_4.jpg" alt="晓霞弄照片 4"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_5.jpg" alt="晓霞弄照片 5"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_6.jpg" alt="晓霞弄照片 6"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_7.jpg" alt="晓霞弄照片 7"></div>
+        <div class="photo-slide"><img src="assets/xiaoxianong_album_8.jpg" alt="晓霞弄照片 8"></div>
+      </div>
+    </div>
+
+    <!-- 底部区域 -->
+    <div class="photo-bottom-area">
+      <!-- 滚动条指示器 -->
+      <div class="photo-indicator" id="photoIndicator">
+        <div class="photo-indicator-dot active"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+        <div class="photo-indicator-dot"></div>
+      </div>
+      <!-- 关闭按钮 -->
+      <div class="photo-close-btn" onclick="goBack('album')">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      var currentIndex = 0;
+      var totalPhotos = 8;
+      var photoSlider = document.getElementById('photoSlider');
+      var photoContainer = document.getElementById('photoContainer');
+      var photoIndicator = document.getElementById('photoIndicator');
+      var indicatorDots = photoIndicator.querySelectorAll('.photo-indicator-dot');
+
+      // 从URL参数获取初始图片索引
+      var urlParams = new URLSearchParams(window.location.search);
+      var indexParam = urlParams.get('index');
+      if (indexParam !== null) {
+        currentIndex = parseInt(indexParam) - 1;
+        if (currentIndex < 0) currentIndex = 0;
+        if (currentIndex >= totalPhotos) currentIndex = totalPhotos - 1;
+      }
+
+      // 更新图片显示和指示器
+      function updatePhoto() {
+        photoSlider.style.transform = 'translateX(-' + (currentIndex * 375) + 'px)';
+        // 更新指示器
+        indicatorDots.forEach(function(dot, index) {
+          if (index === currentIndex) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+        // 更新右上角索引显示
+        var photoIndexEl = document.getElementById('photoIndex');
+        if (photoIndexEl) {
+          photoIndexEl.textContent = (currentIndex + 1) + '/' + totalPhotos;
+        }
+      }
+
+      indicatorDots.forEach(function(dot, index) {
+        dot.addEventListener('click', function() {
+          currentIndex = index;
+          updatePhoto();
+        });
+      });
+
+      // 初始化（先去掉transition，直接设置transform，然后再恢复transition，避免初始化时的滑动动画）
+      photoSlider.style.transition = 'none';
+      updatePhoto();
+      // 强制重绘，确保transition去掉生效
+      void photoSlider.offsetWidth;
+      photoSlider.style.transition = 'transform 0.3s ease';
+
+      // 触摸滑动切换图片
+      var dragStartX = 0;
+      var dragCurrentX = 0;
+      var isDragging = false;
+
+      function finishDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        photoSlider.style.transition = 'transform 0.3s ease';
+        var diff = dragCurrentX - dragStartX;
+        var threshold = Math.max(45, photoContainer.offsetWidth * 0.12);
+        if (Math.abs(diff) > threshold) {
+          if (diff > 0 && currentIndex > 0) {
+            currentIndex--;
+          } else if (diff < 0 && currentIndex < totalPhotos - 1) {
+            currentIndex++;
+          }
+        }
+        updatePhoto();
+      }
+
+      photoContainer.addEventListener('pointerdown', function(e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        dragStartX = e.clientX;
+        dragCurrentX = e.clientX;
+        isDragging = true;
+        photoSlider.style.transition = 'none';
+      });
+
+      photoContainer.addEventListener('pointermove', function(e) {
+        if (!isDragging) return;
+        dragCurrentX = e.clientX;
+        var diff = dragCurrentX - dragStartX;
+        if ((currentIndex === 0 && diff > 0) || (currentIndex === totalPhotos - 1 && diff < 0)) {
+          diff *= 0.3;
+        }
+        var offset = -currentIndex * photoContainer.offsetWidth + diff;
+        photoSlider.style.transform = 'translateX(' + offset + 'px)';
+      });
+
+      photoContainer.addEventListener('pointerup', finishDrag);
+      photoContainer.addEventListener('pointercancel', finishDrag);
+
+      // 鼠标拖动切换图片（桌面端测试用）
+    })();
+  </script>
+</body>
+</html>

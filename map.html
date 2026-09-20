@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 地图</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="map-view" class="view">
+    <div id="map-container"></div>
+
+    <!-- 顶部搜索 -->
+    <div class="map-top">
+      <div class="map-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="mapSearchInput" class="map-search-input" placeholder="搜索景点，如：西湖" autocomplete="off">
+        <button id="mapSearchClear" class="map-search-clear">清除</button>
+      </div>
+      <div class="map-chips" id="mapChips">
+        <button class="map-chip active" data-cat="全部">全部</button>
+        <button class="map-chip" data-cat="湖景">湖景</button>
+        <button class="map-chip" data-cat="街巷">街巷</button>
+        <button class="map-chip" data-cat="古建">古建</button>
+        <button class="map-chip" data-cat="园林">园林</button>
+        <button class="map-chip" data-cat="山景">山景</button>
+        <div class="map-chip-count" id="mapCount">正在加载景点</div>
+      </div>
+      <div class="map-empty" id="mapEmpty">附近暂无匹配的景点</div>
+    </div>
+
+    <!-- 缩放 -->
+    <div class="map-zoom">
+      <button id="mapZoomIn" title="放大">＋</button>
+      <button id="mapZoomOut" title="缩小">－</button>
+    </div>
+    <!-- 定位 -->
+    <button id="mapLocate" class="map-locate" title="重新定位" aria-label="重新定位">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><circle cx="12" cy="12" r="2.2" fill="#FF7A00" stroke="none" stroke-linecap="round" stroke-linejoin="round" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <!-- 机位列表 -->
+    <button id="mapListBtn" class="map-list-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>机位</span>
+    </button>
+
+    <!-- 机位列表抽屉 -->
+    <div class="map-list-panel" id="mapListPanel">
+      <div class="map-list-head">全部机位<span id="mapListCount">14</span></div>
+      <div class="map-list-track" id="mapListTrack"></div>
+    </div>
+
+    <!-- 底部信息卡片 -->
+    <div class="map-tile-hint" id="mapTileHint">地图瓦片加载失败，请检查网络</div>
+    <div class="sheet-mask" id="sheetMask"></div>
+    <div class="spot-sheet" id="spotSheet">
+      <div class="sheet-handle" id="sheetHandle"></div>
+      <div class="sheet-photo">
+        <span class="sheet-cat" id="sheetCat">湖景</span>
+        <button class="sheet-close" id="sheetClose" aria-label="关闭"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+        <img id="sheetImg" alt="机位">
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-title-row">
+          <div class="sheet-name" id="sheetName">断桥残雪</div>
+          <button class="sheet-fav" id="sheetFav">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#FF7A00" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+        <div class="sheet-tags" id="sheetTags"></div>
+        <p class="sheet-desc" id="sheetDesc"></p>
+        <div class="sheet-info">
+          <div class="sheet-info-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FF7A00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><path d="M12 7v5l3.5 2" stroke="#FF7A00" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div><span>最佳时间</span><b id="sheetTime"></b></div>
+          </div>
+          <div class="sheet-info-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z" stroke="#FF7A00" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /><circle cx="12" cy="13" r="3.5" stroke="#FF7A00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <div><span>出片提示</span><b id="sheetTip"></b></div>
+          </div>
+        </div>
+        <div class="sheet-actions">
+          <button class="sheet-nav" id="sheetNav">导航去这里</button>
+          <button class="sheet-detail" id="sheetDetail">查看详情</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 机位详情页 ===== -->
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <div class="nav-item" data-page="home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>广场</span>
+    </div>
+    <div class="nav-item" data-page="map">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>地图</span>
+    </div>
+    <div class="nav-publish-wrap">
+      <div class="nav-publish" onclick="goPage('publish')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="nav-item" data-page="msg">
+      <div class="nav-icon-rel">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-badge">99+</span>
+      </div>
+      <span>消息</span>
+    </div>
+    <div class="nav-item" data-page="mine">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>我的</span>
+    </div>
+  </div>
+  </div>
+  <script src='assets/amap-config.js'></script>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('map-view');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        // 设置状态栏背景色为#F5F2ED，和页面内容背景色一致
+        sb.style.background = 'transparent';
+      }
+      if (typeof initMap === 'function') initMap();
+      var bn = document.querySelector('.bottom-nav');
+      if (bn) bn.classList.add('show');
+      var navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(function(item) {
+        if (item.getAttribute('data-page') === 'map') item.classList.add('active');
+      });
+      navItems.forEach(function(item) {
+        item.addEventListener('click', function() { goPage(item.getAttribute('data-page')); });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 热门机位</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="hot-spots" class="view">
+    <!-- 状态栏 -->
+    <div class="status-bar" style="background: #fff;">
+      <span class="status-time">9:00</span>
+      <div class="status-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+      </div>
+    </div>
+    <div class="hot-spots-header">
+      <div class="hot-spots-back" onclick="closeHotSpots()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="hot-spots-title">热门机位</div>
+      <div class="hot-spots-search" onclick="goPage('search');">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    
+    <div class="hot-spots-tabs" id="hotSpotsTabs">
+      <div class="hot-spots-tab active" onclick="switchHotTab(this)">全部</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">人像</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">建筑</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">街拍</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">风光</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">落日</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">氛围感</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">景区</div>
+      <div class="hot-spots-tab" onclick="switchHotTab(this)">公园</div>
+    </div>
+    
+    <div class="hot-spots-list">
+      <div class="hot-spot-item" data-cat="街拍 氛围感" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong.jpg" alt="晓霞弄">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-小巷文字墙及望仙阁</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="风光" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post2.jpg" alt="白堤湖边长椅">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">西湖景区-白堤湖边长椅</div>
+          <div class="hot-spots-tags">
+            <span>景区</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>湖景</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="风光 落日" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post3.jpg" alt="柳浪闻莺石拱桥">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">西湖景区-柳浪闻莺石拱桥</div>
+          <div class="hot-spots-tags">
+            <span>园林古桥</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>日落</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="人像 氛围感" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post4.jpg" alt="曲院风荷鱼缸">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">西湖景区-曲院风荷鱼缸</div>
+          <div class="hot-spots-tags">
+            <span>人像氛围感</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>夏日</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="建筑" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post5.jpg" alt="灵隐寺入口牌匾">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">杭州灵隐寺-入口牌匾</div>
+          <div class="hot-spots-tags">
+            <span>禅意古寺</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>人文</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="风光 氛围感" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post6.jpg" alt="青山湖水上森林木栈道">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">青山湖景区-水上森林木栈道</div>
+          <div class="hot-spots-tags">
+            <span>水上森林</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>森系治愈</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" data-cat="人像 风光" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post7.jpg" alt="太子湾公园郁金香花海">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">太子湾公园-郁金香花海</div>
+          <div class="hot-spots-tags">
+            <span>城市花海</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>草坪</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="景区" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post1.jpg" alt="仙桥洞景区吊桥">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">仙桥洞景区-吊桥</div>
+          <div class="hot-spots-tags">
+            <span>山野吊桥</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>秘境</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="公园" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post2.jpg" alt="虎跑公园含晖亭">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">虎跑公园-含晖亭</div>
+          <div class="hot-spots-tags">
+            <span>山林古亭</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>园林</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="街拍 建筑" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post3.jpg" alt="天目里水泥墙旁树干">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">天目里-水泥墙旁树干</div>
+          <div class="hot-spots-tags">
+            <span>极简建筑</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>街拍</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="风光 落日 景区" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post4.jpg" alt="西湖景区集贤亭日落">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">西湖景区-集贤亭日落</div>
+          <div class="hot-spots-tags">
+            <span>临湖亭台</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>落日</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="建筑" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post5.jpg" alt="韩美林艺术馆佛像雕塑旁">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">韩美林艺术馆-佛像雕塑旁</div>
+          <div class="hot-spots-tags">
+            <span>艺术展馆</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>雕塑</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="氛围感 公园" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/post6.jpg" alt="云溪竹径洗心亭">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">云溪竹径-洗心亭</div>
+          <div class="hot-spots-tags">
+            <span>万亩竹海</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>氛围感</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hot-spot-item" data-cat="人像 氛围感 建筑" onclick="openSpotDetail('hot-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong.jpg" alt="六和塔塔上窗户">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">六和塔-塔上窗户</div>
+          <div class="hot-spots-tags">
+            <span>古塔楼阁</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>人像氛围感</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>收费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('hot-spots');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        // 设置状态栏背景色为纯白色，和页面内容背景色一致
+        sb.style.background = '#fff';
+      }
+    })();
+  // 热门机位分类切换
+  function switchHotTab(el) {
+    document.querySelectorAll('.hot-spots-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // 分类标签拖拽滚动
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabsEl = document.getElementById('hotSpotsTabs');
+    if (tabsEl && typeof enableDragScroll === 'function') {
+      enableDragScroll(tabsEl);
+    }
+  });
+  </script>
+</body>
+</html>

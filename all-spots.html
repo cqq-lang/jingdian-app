@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 所有机位</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="all-spots" class="view" style="display:flex; flex-direction:column;">
+    <!-- 状态栏 -->
+    <div class="status-bar" style="background: #fff;">
+      <span class="status-time">9:00</span>
+      <div class="status-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+      </div>
+    </div>
+    <div class="hot-spots-header">
+      <div class="hot-spots-back" onclick="goBack('place-detail')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="hot-spots-title">所有机位</div>
+      <div class="hot-spots-search" onclick="goPage('all-spots-search');">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    
+
+    
+    <div class="hot-spots-list">
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong.jpg" alt="晓霞弄">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-小巷文字墙及望仙阁</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong2.jpg" alt="十五奎巷晓霞弄">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">十五奎巷晓霞弄-林荫步道</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong3.jpg" alt="晓霞弄石阶小路">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-石阶小路与白墙绿植</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_1.jpg" alt="晓霞弄古风建筑">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-古风建筑</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_2.jpg" alt="晓霞弄石阶古塔">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-石阶与古塔夜景</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_3.jpg" alt="晓霞弄街道塔楼">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-街道与远处塔楼同框</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_4.jpg" alt="晓霞弄望仙阁夜景">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-石板路上望仙阁夜景</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_5.jpg" alt="晓霞弄白墙黛瓦">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-白墙黛瓦小巷深处</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_6.jpg" alt="晓霞弄老木门">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-老木门与青石板路</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_7.jpg" alt="晓霞弄藤蔓爬墙">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-藤蔓爬墙与光影斑驳</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/xiaoxianong_album_8.jpg" alt="晓霞弄屋檐一角">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-飞檐翘角仰拍视角</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="hot-spot-item" onclick="openSpotDetail('all-spots')">
+        <div class="hot-spot-thumb">
+          <img src="assets/nearby-spot1.jpg" alt="晓霞弄转角">
+        </div>
+        <div class="hot-spot-info">
+          <div class="hot-spot-name">晓霞弄-转角遇见望仙阁</div>
+          <div class="hot-spots-tags">
+            <span>古风街巷</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>树荫</span>
+            <span class="hot-spot-tag-divider">|</span>
+            <span>免费</span>
+          </div>
+        </div>
+        <div class="hot-spot-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="#CCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('all-spots');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        // 设置状态栏背景色为纯白色，和页面内容背景色一致
+        sb.style.background = '#fff';
+      }
+    })();
+  // 热门机位分类切换
+  function switchHotTab(el) {
+    document.querySelectorAll('.hot-spots-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // 分类标签拖拽滚动
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabsEl = document.getElementById('hotSpotsTabs');
+    if (tabsEl && typeof enableDragScroll === 'function') {
+      enableDragScroll(tabsEl);
+    }
+  });
+  </script>
+</body>
+</html>

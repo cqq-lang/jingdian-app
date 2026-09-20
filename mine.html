@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 我的</title>
+<link rel="stylesheet" href="assets/common.css">
+<style>
+  /* 标签内容切换 */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  /* 笔记列表active时用block布局（column-count需要） */
+  .mine-notes-list.tab-content.active { display: block; }
+
+  /* 笔记列表 - 两列瀑布流（用column-count实现） */
+  .mine-notes-list {
+    column-count: 2;
+    column-gap: 8px;
+    padding: 0 12px 16px;
+  }
+  .mine-notes-column {
+    /* 不再需要flex列布局，column-count会自动处理 */
+  }
+
+  /* 笔记卡片 */
+  .mine-note-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    break-inside: avoid; /* 避免卡片被分割到两列 */
+    margin-bottom: 8px;
+  }
+  .mine-note-img-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .mine-note-img-wrap img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  /* 第一篇笔记图片高一些 */
+  .mine-note-img-wrap.tall-img {
+    height: 200px;
+  }
+  .mine-note-img-wrap.tall-img img {
+    height: 100%;
+  }
+  /* 第二篇笔记图片矮一些 */
+  .mine-note-img-wrap.short-img {
+    height: 170px;
+  }
+  .mine-note-img-wrap.short-img img {
+    height: 100%;
+  }
+  /* 浏览量 - 左下角 */
+  .mine-note-views {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.4);
+    padding: 3px 8px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .mine-note-views span {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 500;
+  }
+  .mine-note-title {
+    font-size: 13px;
+    color: #1a1a1a;
+    line-height: 1.4;
+    padding: 8px 10px 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mine-note-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 10px;
+  }
+  .mine-note-footer img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .mine-note-footer > span {
+    flex: 1;
+    font-size: 11px;
+    color: #999;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mine-note-like {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .mine-note-like span {
+    font-size: 11px;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+  <div id="mine-view" class="view sub-page mine-page">
+    <!-- 顶部固定区域 -->
+    <div class="mine-fixed-header">
+    <!-- 顶部渐变区域 -->
+    <div class="mine-header-gradient">
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span class="status-time">9:00</span>
+      <div class="status-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+      </div>
+    </div>
+    <!-- 顶部操作栏 -->
+    <div class="mine-top-bar">
+      <div class="mine-top-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="mine-top-right">
+        <div class="mine-top-icon" onclick="goPage('mine-search');">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="mine-top-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 用户信息区 -->
+    <div class="mine-profile-section">
+      <div class="mine-profile-header">
+        <div class="mine-avatar">
+          <img src="assets/diandian.png" alt="头像" style="margin-left: -4px; margin-top: 2px;">
+        </div>
+        <div class="mine-profile-info">
+          <div class="mine-username-row">
+            <span class="mine-username">点点</span>
+            <div class="mine-username-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M6 9l6 6 6-6" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="mine-id-row">
+            <span>镜点号：123456789</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="9" width="13" height="13" rx="2" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="#999" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mine-edit-btn">编辑主页</div>
+      </div>
+      <div class="mine-bio">我是点点，陪你寻找城市好机位...</div>
+    </div>
+    </div>
+    
+    <!-- 数据统计 -->
+    <div class="mine-stats">
+      <div class="mine-stat-item">
+        <div class="mine-stat-num">4</div>
+        <div class="mine-stat-label">发布</div>
+      </div>
+      <div class="mine-stat-item">
+        <div class="mine-stat-num">79</div>
+        <div class="mine-stat-label">获赞</div>
+      </div>
+      <div class="mine-stat-item">
+        <div class="mine-stat-num">85</div>
+        <div class="mine-stat-label">关注</div>
+      </div>
+      <div class="mine-stat-item">
+        <div class="mine-stat-num">243</div>
+        <div class="mine-stat-label">粉丝</div>
+      </div>
+    </div>
+    
+    <!-- 快捷功能 -->
+    <div class="mine-quick-actions">
+      <div class="mine-quick-action">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="12" cy="10" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>我的打卡</span>
+      </div>
+      <div class="mine-quick-action">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M12 7v5l3.5 2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>浏览历史</span>
+      </div>
+      <div class="mine-quick-action">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="14 2 14 8 20 8" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>草稿箱</span>
+      </div>
+    </div>
+    
+    <!-- 标签页（固定） -->
+    <div class="mine-tabs">
+      <div class="mine-tab active" data-tab="spots">机位</div>
+      <div class="mine-tab" data-tab="notes">笔记</div>
+      <div class="mine-tab" data-tab="likes">点赞</div>
+      <div class="mine-tab" data-tab="favorites">喜欢</div>
+      <div class="mine-tab" data-tab="collects">收藏</div>
+    </div>
+    </div>
+    
+    <!-- 滚动内容区域 -->
+    <div class="mine-scroll-content">
+    
+    <!-- 机位内容列表 -->
+    <div class="mine-content-list tab-content active" id="content-spots">
+      <div class="mine-content-item">
+        <div class="mine-content-thumb">
+          <img src="assets/xiaoxianong.jpg" alt="晓霞弄">
+        </div>
+        <div class="mine-content-info">
+          <div class="mine-content-title">晓霞弄-小巷文字墙及望仙阁</div>
+          <div class="mine-content-meta">
+            <div class="mine-content-stats">
+              <div class="mine-content-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#666"/>
+                  <circle cx="12" cy="12" r="3" fill="#fff"/>
+                </svg>
+                <span>246</span>
+              </div>
+              <div class="mine-content-stat">
+                <svg class="star-icon-round" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2.5c.3 0 .6.2.7.5l1.8 4.1 4.4.4c.8.1 1.1 1.1.5 1.7l-3.3 2.9 1 4.3c.2.8-.7 1.4-1.4 1l-3.7-2.2-3.7 2.2c-.7.4-1.6-.2-1.4-1l1-4.3-3.3-2.9c-.6-.5-.3-1.5.5-1.7l4.4-.4 1.8-4.1c.2-.3.4-.5.7-.5z" fill="#666"/>
+                </svg>
+                <span>43</span>
+              </div>
+            </div>
+            <div class="mine-content-date">2026-08-10</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mine-content-item">
+        <div class="mine-content-thumb">
+          <img src="assets/post2.jpg" alt="白堤">
+        </div>
+        <div class="mine-content-info">
+          <div class="mine-content-title">西湖景区-白堤湖边长椅</div>
+          <div class="mine-content-meta">
+            <div class="mine-content-stats">
+              <div class="mine-content-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#666"/>
+                  <circle cx="12" cy="12" r="3" fill="#fff"/>
+                </svg>
+                <span>543</span>
+              </div>
+              <div class="mine-content-stat">
+                <svg class="star-icon-round" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2.5c.3 0 .6.2.7.5l1.8 4.1 4.4.4c.8.1 1.1 1.1.5 1.7l-3.3 2.9 1 4.3c.2.8-.7 1.4-1.4 1l-3.7-2.2-3.7 2.2c-.7.4-1.6-.2-1.4-1l1-4.3-3.3-2.9c-.6-.5-.3-1.5.5-1.7l4.4-.4 1.8-4.1c.2-.3.4-.5.7-.5z" fill="#666"/>
+                </svg>
+                <span>66</span>
+              </div>
+            </div>
+            <div class="mine-content-date">2026-08-6</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mine-content-item">
+        <div class="mine-content-thumb">
+          <img src="assets/post4.jpg" alt="柳浪闻莺">
+        </div>
+        <div class="mine-content-info">
+          <div class="mine-content-title">西湖景区-柳浪闻莺石拱桥</div>
+          <div class="mine-content-meta">
+            <div class="mine-content-stats">
+              <div class="mine-content-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#666"/>
+                  <circle cx="12" cy="12" r="3" fill="#fff"/>
+                </svg>
+                <span>748</span>
+              </div>
+              <div class="mine-content-stat">
+                <svg class="star-icon-round" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2.5c.3 0 .6.2.7.5l1.8 4.1 4.4.4c.8.1 1.1 1.1.5 1.7l-3.3 2.9 1 4.3c.2.8-.7 1.4-1.4 1l-3.7-2.2-3.7 2.2c-.7.4-1.6-.2-1.4-1l1-4.3-3.3-2.9c-.6-.5-.3-1.5.5-1.7l4.4-.4 1.8-4.1c.2-.3.4-.5.7-.5z" fill="#666"/>
+                </svg>
+                <span>164</span>
+              </div>
+            </div>
+            <div class="mine-content-date">2026-08-2</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mine-content-item">
+        <div class="mine-content-thumb">
+          <img src="assets/post6.jpg" alt="曲院风荷">
+        </div>
+        <div class="mine-content-info">
+          <div class="mine-content-title">西湖景区-曲院风荷鱼缸</div>
+          <div class="mine-content-meta">
+            <div class="mine-content-stats">
+              <div class="mine-content-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#666"/>
+                  <circle cx="12" cy="12" r="3" fill="#fff"/>
+                </svg>
+                <span>328</span>
+              </div>
+              <div class="mine-content-stat">
+                <svg class="star-icon-round" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2.5c.3 0 .6.2.7.5l1.8 4.1 4.4.4c.8.1 1.1 1.1.5 1.7l-3.3 2.9 1 4.3c.2.8-.7 1.4-1.4 1l-3.7-2.2-3.7 2.2c-.7.4-1.6-.2-1.4-1l1-4.3-3.3-2.9c-.6-.5-.3-1.5.5-1.7l4.4-.4 1.8-4.1c.2-.3.4-.5.7-.5z" fill="#666"/>
+                </svg>
+                <span>89</span>
+              </div>
+            </div>
+            <div class="mine-content-date">2026-07-28</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 笔记内容列表（两列瀑布流，用column-count自动分配） -->
+        <!-- 笔记内容列表（两列瀑布流，用column-count自动分配） -->
+    <div class="mine-notes-list tab-content" id="content-notes">
+      <!-- 笔记卡片1 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap tall-img">
+          <img src="assets/mine_note_1.jpg" alt="笔记图片">
+          <div class="mine-note-views">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#fff"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+            <span>246</span>
+          </div>
+        </div>
+        <div class="mine-note-title">竟然在杭州拍到了重庆同款山城巷</div>
+        <div class="mine-note-footer">
+          <img src="assets/diandian.png" alt="头像">
+          <span>点点</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>267</span>
+          </div>
+        </div>
+      </div>
+      <!-- 笔记卡片2 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/mine_note_3.jpg" alt="笔记图片">
+          <div class="mine-note-views">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#fff"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+            <span>128</span>
+          </div>
+        </div>
+        <div class="mine-note-title">为了拍这个人生照片，我特意来了一趟杭州</div>
+        <div class="mine-note-footer">
+          <img src="assets/diandian.png" alt="头像">
+          <span>点点</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>176</span>
+          </div>
+        </div>
+      </div>
+      <!-- 笔记卡片3 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap short-img">
+          <img src="assets/mine_note_2.jpg" alt="笔记图片">
+          <div class="mine-note-views">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#fff"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+            <span>189</span>
+          </div>
+        </div>
+        <div class="mine-note-title">西湖边的小众机位，人少景美</div>
+        <div class="mine-note-footer">
+          <img src="assets/diandian.png" alt="头像">
+          <span>点点</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>156</span>
+          </div>
+        </div>
+      </div>
+      <!-- 笔记卡片4 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/mine_note_4.jpg" alt="笔记图片">
+          <div class="mine-note-views">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="#fff"/>
+              <circle cx="12" cy="12" r="3" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+            <span>542</span>
+          </div>
+        </div>
+        <div class="mine-note-title">第一个发明这个机位的人是天才吧</div>
+        <div class="mine-note-footer">
+          <img src="assets/diandian.png" alt="头像">
+          <span>点点</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>312</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 点赞内容列表（两列瀑布流） -->
+    <div class="mine-notes-list tab-content" id="content-likes">
+      <!-- 点赞帖子1：杭州晓霞弄 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap tall-img">
+          <img src="assets/like_post_1.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">除了西湖，会带每个来杭州的朋友来这citywalk</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_1.png" alt="头像">
+          <span>城市漫游者</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>267</span>
+          </div>
+        </div>
+      </div>
+      <!-- 点赞帖子3：杭州六和塔 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/like_post_3.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">逛西湖想拍出神图，就看这篇机位</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_5.png" alt="头像">
+          <span>窗边摄影师</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>238</span>
+          </div>
+        </div>
+      </div>
+      <!-- 点赞帖子2：杭州六和塔 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/like_post_2.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">杭州六和塔有什么魔力，怎么一来就出片</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_2.png" alt="头像">
+          <span>逆光手记</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>176</span>
+          </div>
+        </div>
+      </div>
+      <!-- 点赞帖子4：中山北路Cycle&Cycle -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap tall-img">
+          <img src="assets/like_post_4.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">中山北路这条街就有这么好逛吗？</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_6.png" alt="头像">
+          <span>街角取景器</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>312</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 喜欢内容列表（两列瀑布流） -->
+    <div class="mine-notes-list tab-content" id="content-favorites">
+      <!-- 喜欢帖子2：上海陆家嘴 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_2.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">建议码住这个路线，不管怎么拍都出片</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_8.png" alt="头像">
+          <span>闪光灯练习生</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#FF820C" stroke-width="1.8" fill="#FF820C" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>521</span>
+          </div>
+        </div>
+      </div>
+      <!-- 喜欢帖子1：上海外滩 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_1.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">上海外滩必拍的五个机位！附上定位</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_4.png" alt="头像">
+          <span>黑白印花社</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#FF820C" stroke-width="1.8" fill="#FF820C" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>159</span>
+          </div>
+        </div>
+      </div>
+      <!-- 喜欢帖子4：西湖边长椅 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_4.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">来西湖不要错过这个机位，世界第一忧郁诞生</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_7.png" alt="头像">
+          <span>胶片小夏</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#FF820C" stroke-width="1.8" fill="#FF820C" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>755</span>
+          </div>
+        </div>
+      </div>
+      <!-- 喜欢帖子3：树林小径 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_3.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">周末想远离城市喧嚣，就来这里走走吧</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_3.png" alt="头像">
+          <span>落日收藏家</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#FF820C" stroke-width="1.8" fill="#FF820C" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>447</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 收藏内容列表（两列瀑布流） -->
+    <div class="mine-notes-list tab-content" id="content-collects">
+      <!-- 收藏帖子4：上海陆家嘴 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_2.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">建议码住这个路线，不管怎么拍都出片</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_8.png" alt="头像">
+          <span>闪光灯练习生</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>521</span>
+          </div>
+        </div>
+      </div>
+      <!-- 收藏帖子3：上海外滩 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_1.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">上海外滩必拍的五个机位！附上定位</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_4.png" alt="头像">
+          <span>黑白印花社</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>159</span>
+          </div>
+        </div>
+      </div>
+      <!-- 收藏帖子2：西湖边长椅 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_4.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">来西湖不要错过这个机位，世界第一忧郁诞生</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_7.png" alt="头像">
+          <span>胶片小夏</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>755</span>
+          </div>
+        </div>
+      </div>
+      <!-- 收藏帖子1：树林小径 -->
+      <div class="mine-note-card" onclick="goPage('post-detail')">
+        <div class="mine-note-img-wrap">
+          <img src="assets/fav_post_3.jpg" alt="帖子图片">
+        </div>
+        <div class="mine-note-title">周末想远离城市喧嚣，就来这里走走吧</div>
+        <div class="mine-note-footer">
+          <img src="assets/avatar_3.png" alt="头像">
+          <span>落日收藏家</span>
+          <div class="mine-note-like">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#999" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>447</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <div class="nav-item" data-page="home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>广场</span>
+    </div>
+    <div class="nav-item" data-page="map">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>地图</span>
+    </div>
+    <div class="nav-publish-wrap">
+      <div class="nav-publish" onclick="goPage('publish')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="nav-item" data-page="msg">
+      <div class="nav-icon-rel">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-badge">99+</span>
+      </div>
+      <span>消息</span>
+    </div>
+    <div class="nav-item" data-page="mine">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>我的</span>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('mine-view');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        // 设置状态栏背景色为白色
+        sb.style.background = '#fff';
+      }
+      var bn = document.querySelector('.bottom-nav');
+      if (bn) bn.classList.add('show');
+      var navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(function(item) {
+        if (item.getAttribute('data-page') === 'mine') item.classList.add('active');
+      });
+      navItems.forEach(function(item) {
+        item.addEventListener('click', function() { goPage(item.getAttribute('data-page')); });
+      });
+      // 标签点击切换
+      var mineTabs = document.querySelectorAll('.mine-tab');
+      var tabContents = document.querySelectorAll('.tab-content');
+      mineTabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          mineTabs.forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          var tabName = tab.getAttribute('data-tab');
+          tabContents.forEach(function(content) {
+            content.classList.remove('active');
+            if (content.id === 'content-' + tabName) {
+              content.classList.add('active');
+            }
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 地点详情</title>
+<link rel="stylesheet" href="assets/common.css">
+<style>
+/* 地点详情页专用样式 */
+
+  .publish-scroll-area,
+  .detail-scroll-area,
+  .mine-page,
+  .message-page,
+  .search-page,
+  .square-page,
+  .view,
+  .phone {
+    position: relative;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .publish-scroll-area::-webkit-scrollbar,
+  .detail-scroll-area::-webkit-scrollbar,
+  .mine-page::-webkit-scrollbar,
+  .message-page::-webkit-scrollbar,
+  .search-page::-webkit-scrollbar,
+  .square-page::-webkit-scrollbar,
+  .view::-webkit-scrollbar,
+  .phone::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+
+  /* ===== 手机外壳 ===== */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #F5F2ED;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border: 8px solid #1a1a1a;
+  }
+
+
+  /* ===== 视图通用 ===== */
+  .view {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  .view.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+
+  /* 底部加载区 */
+  .splash-bottom {
+    width: 100%;
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+
+  /* 状态栏 */
+    .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+    position: relative;
+    z-index: 100;
+    background: linear-gradient(180deg, rgba(255,130,12,0.1) 0%, rgba(255,130,12,0.08) 100%);
+  }
+
+  .status-bar-fixed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: rgba(255, 130, 12, 0.1);
+    display: none;
+    transition: background 0.2s ease;
+  }
+
+  .status-bar-fixed.show {
+    display: flex;
+  }
+
+  .status-time {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-icons svg {
+    display: block;
+  }
+
+  .input-wrap input::placeholder {
+    color: #BBB;
+  }
+
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+  }
+
+  .dropdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.05);
+    z-index: 5;
+    display: none;
+  }
+
+  .dropdown-overlay.show {
+    display: block;
+  }
+
+  .search-input-full::placeholder {
+    color: #999;
+  }
+
+
+  /* 键盘弹窗 */
+  .keyboard-popup {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+  }
+
+  .keyboard-popup.show {
+    transform: translateY(0);
+  }
+
+  .keyboard-popup img {
+    width: 100%;
+    display: block;
+    height: auto;
+  }
+
+
+  /* ===== 帖子详情页 ===== */
+  #post-detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #F5F2ED;
+    overflow: hidden;
+    scrollbar-width: none;
+  }
+
+  .detail-scroll {
+    position: absolute;
+    top: 88px;
+    bottom: 64px;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .detail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  #post-detail::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  /* 顶部导航栏 */
+  .detail-top {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    background: #F5F2ED;
+    z-index: 10;
+  }
+
+  .detail-back {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .detail-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  .detail-username {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-left: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .detail-follow {
+    background: transparent;
+    border: 1.5px solid #FF7A00;
+    color: #FF7A00;
+    font-size: 14px;
+    font-weight: 600;
+    width: 80px;
+    height: 28px;
+    padding: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-right: 8px;
+    text-align: center;
+    line-height: 28px;
+  }
+
+  .detail-search {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+
+  /* 图片轮播区 */
+  .detail-swiper {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .swiper-images {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+
+  .swiper-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .swiper-counter {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-weight: 500;
+  }
+
+  .swiper-progress {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    z-index: 10;
+    gap: 4px;
+  }
+
+  .swiper-click-left, .swiper-click-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  .swiper-click-left {
+    left: 0;
+  }
+
+  .swiper-click-right {
+    right: 0;
+  }
+
+
+  /* 帖子内容区 */
+  .detail-content {
+    padding: 16px;
+  }
+
+  .detail-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 26px;
+    margin-bottom: 10px;
+  }
+
+  .detail-desc {
+    font-size: 16px;
+    color: #333;
+    line-height: 24px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .detail-desc p {
+    margin: 0 0 4px 0;
+  }
+
+  .detail-location {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(129, 129, 129, 0.3);
+    padding: 5px 12px;
+    border-radius: 5px;
+    width: fit-content;
+  }
+
+  .detail-location span {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  .detail-location svg * {
+    stroke: #fff;
+  }
+
+
+  /* 相关推荐卡片 */
+  .detail-related {
+    display: flex;
+    gap: 12px;
+    margin: 0 16px 12px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .detail-related img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+
+  /* 发布信息 */
+  .detail-meta {
+    font-size: 12px;
+    color: #999;
+    padding: 0 0 12px;
+    margin: 0 16px 12px;
+    border-bottom: 2px solid #DDD;
+  }
+
+
+  /* 评论区 */
+  .detail-comments {
+    padding: 3px 16px 80px;
+  }
+
+  .comments-title {
+    font-size: 14px;
+    font-weight: 400;
+    color: #999;
+    margin-bottom: 12px;
+  }
+
+
+  /* 评论输入框 */
+  .comment-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .comment-input-bar .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .comment-input-bar .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .comment-input {
+    flex: 1;
+    background: rgba(217, 217, 217, 0.5);
+    border-radius: 18px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: #999;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .comment-icons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+
+  /* 评论列表 */
+  .comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .comment-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .comment-item > .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+
+  .comment-item > .comment-avatar img,
+  .sub-comment-item > .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .comment-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .comment-text {
+    font-size: 16px;
+    color: #1a1a1a;
+    line-height: 24px;
+    margin-bottom: 6px;
+  }
+
+  .comment-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-bottom: 6px;
+  }
+
+  .comment-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .comment-reply-btn {
+    cursor: pointer;
+  }
+
+  .comment-like {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    color: #494949;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .comment-like span {
+    margin-left: -1px;
+  }
+
+  
+  /* 评论折叠状态 */
+  .comment-item.collapsed .comment-body,
+  .comment-item.collapsed .sub-comments,
+  .sub-comment-item.collapsed .comment-body {
+    display: none;
+  }
+
+  
+  .comment-item.collapsed .collapsed-hint,
+  .sub-comment-item.collapsed .collapsed-hint {
+    display: flex;
+  }
+
+
+  /* 子评论 */
+  .sub-comments {
+    margin-top: 12px;
+    margin-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sub-comment-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .sub-comment-item > .comment-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sub-comment-item .comment-text {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+
+  .comments-end {
+    text-align: center;
+    font-size: 14px;
+    color: #ccc;
+    margin-top: 24px;
+  }
+
+
+  /* 底部操作栏 */
+  .detail-bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 12px;
+    border-top: 1px solid #EEE;
+    z-index: 100;
+  }
+
+
+  /* 评论弹窗 */
+  .comment-popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .comment-popup-overlay.active {
+    display: flex;
+  }
+
+  .comment-popup {
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .comment-popup-overlay.active .comment-popup {
+    transform: translateY(0);
+  }
+
+  .bottom-input {
+    flex: 1;
+    background: rgba(217, 217, 217, 0.5);
+    border-radius: 18px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: #999;
+    min-width: 0;
+  }
+
+  .bottom-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .bottom-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    width: 38px;
+    flex-shrink: 0;
+  }
+
+  .bottom-action span {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
+
+  
+  /* 激活状态 */
+  .bottom-action.active .icon-outline {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  
+  .bottom-action.active .icon-filled {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  
+  .bottom-action.active span {
+    color: #FF7A00;
+  }
+
+  
+  /* 点击动画 */
+  .bottom-action.clicked .action-icon {
+    animation: iconPop 0.4s ease;
+  }
+
+  
+  /* 数字变化动画 */
+  .bottom-action .count-num {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  
+  .bottom-action.count-up .count-num {
+    animation: countUp 0.3s ease;
+  }
+
+  
+  .publish-title-input::placeholder {
+    color: #999;
+  }
+
+  
+  .publish-content-input::placeholder {
+    color: #999;
+  }
+
+  
+  .publish-bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    border-top: 1px solid #E8E5E0;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+
+  /* 底部导航栏 */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: #fff;
+    display: none;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-top: 1px solid #EEE;
+    z-index: 999;
+    padding-top: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .bottom-nav.show {
+    display: flex;
+  }
+
+  /* ===== 机位详情页 ===== */
+  #spot-detail {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #F5F2ED;
+    overflow: hidden;
+    z-index: 50;
+  }
+
+
+  .spot-bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    z-index: 10;
+  }
+
+  .spot-comment-input {
+    flex: 1;
+    height: 40px;
+    background: #F5F2ED;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    cursor: pointer;
+  }
+
+  .spot-comment-input span {
+    font-size: 13px;
+    color: #999;
+  }
+
+
+  /* ===== 地点详情页 ===== */
+  #place-detail {
+  background: #F5F2ED;
+}
+
+  .place-top {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    background: linear-gradient(180deg, rgba(255,130,12,0.08) 0%, rgba(255,130,12,0.06) 100%);
+    z-index: 100;
+    gap: 10px;
+    border-bottom: none;
+  }
+
+  .place-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    flex-shrink: 0;
+  }
+
+  .place-search {
+    flex: 1;
+    height: 36px;
+    background: #fff;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 8px;
+    font-size: 14px;
+    color: #999;
+    cursor: pointer;
+  }
+
+    .place-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .place-icon-btn.checked svg {
+    stroke: #FF820C;
+  }
+
+
+  .place-gallery {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,130,12,0.06) 0%, rgba(255,130,12,0.03) 100%);
+    padding: 0 16px;
+    margin: 0;
+    box-sizing: border-box;
+    display: block;
+  }
+
+  .place-gallery-images {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    border-radius: 10px;
+  }
+
+  .place-gallery-images::-webkit-scrollbar {
+    display: none;
+  }
+
+  .place-gallery-img {
+    width: calc((100% - 16px) / 3) !important;
+    min-width: calc((100% - 16px) / 3) !important;
+    max-width: calc((100% - 16px) / 3) !important;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    border-radius: 0;
+    scroll-snap-align: start;
+  }
+
+  .place-gallery-count {
+    position: absolute;
+    bottom: 7px;
+    right: 24px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+
+
+  .place-scroll {
+    position: absolute !important;
+    top: 92px !important;
+    bottom: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    overflow-y: auto;
+    scrollbar-width: none;
+    background: transparent;
+  }
+
+  .place-scroll::-webkit-scrollbar { display: none; }
+
+
+  .place-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 2px 0;
+  }
+
+  .place-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .place-fav-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #666;
+    padding-top: 6px;
+  }
+
+
+  .place-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 2px 0;
+  }
+
+  .place-stars {
+    color: #FF820C;
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+
+  .place-score {
+    font-size: 16px;
+    font-weight: 600;
+    color: #FF820C;
+  }
+
+  .place-reviews {
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+  }
+
+
+  .place-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 2px 0;
+  }
+
+  .place-tags span {
+    font-size: 14px;
+    color: #1a1a1a;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+
+
+  .place-badges {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 10px 2px 0;
+  }
+
+  .place-badge {
+    font-size: 12px;
+    color: #1a1a1a;
+    background: rgba(255, 130, 12, 0.2);
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .place-badge.rank {
+    background: rgba(255, 130, 12, 0.2);
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+
+  .place-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 10px 2px 0;
+  }
+
+  .place-address-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 2px;
+    margin: 4px 0 0;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+
+  .place-nav-btn-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .place-nav-btn-small span {
+    font-size: 11px;
+    color: #1a1a1a;
+  }
+
+  .place-address {
+    flex: 1;
+    cursor: pointer;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+
+  .place-address-text {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  .place-distance {
+    display: block;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .place-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #FF820C;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+
+
+  /* 标题信息卡片 */
+  .place-info-card {
+    background: #fff;
+    border-radius: 20px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+  }
+
+  /* 笔记卡片 */
+  .place-notes-card {
+    background: #fff;
+    border-radius: 0;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  .place-tabs {
+    display: flex;
+    border-bottom: none;
+    padding: 0 16px 4px 16px;
+    margin-top: 0;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 20;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .place-tab {
+    padding: 12px 16px 4px 16px;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    position: relative;
+    font-weight: 400;
+    font-weight: 500;
+  }
+
+  .place-tab.active {
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .place-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 2px;
+    background: #FF820C;
+    border-radius: 1px;
+  }
+
+  .place-tab[data-place-tab="around"].active::after {
+    width: 22px;
+  }
+
+
+  .place-notes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 4px 16px 30px;
+  }
+
+  .place-note-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .place-note-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .place-note-info {
+    padding: 10px;
+  }
+
+  .place-note-title {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .place-note-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .place-note-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .place-note-author {
+    font-size: 11px;
+    color: #999;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .place-note-like {
+    font-size: 11px;
+    color: #999;
+  }
+
+
+  .place-around {
+    padding: 20px 16px 30px;
+  }
+
+  .map-search-input::placeholder {
+    color: #999;
+  }
+
+  .sheet-detail {
+    flex: 1;
+    height: 44px;
+    border: none;
+    border-radius: 22px;
+    background: #FF7A00;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+
+
+  .msg-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 52px 18px 14px;
+    background: #F5F2ED;
+  }
+
+  .msg-tabs {
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+  }
+
+  .msg-tab {
+    position: relative;
+    font-size: 16px;
+    font-weight: 500;
+    color: #9A958D;
+    cursor: pointer;
+    padding-bottom: 8px;
+    transition: color 0.2s ease, font-size 0.2s ease;
+  }
+
+  .msg-tab.active {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .msg-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+    background: #FF7A00;
+  }
+
+  .msg-tab-dot {
+    position: absolute;
+    top: 0;
+    right: -7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #FF4D4F;
+  }
+
+  .msg-top-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .msg-icon-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.15s ease;
+  }
+
+  .msg-icon-btn:active { background: rgba(0,0,0,0.06); }
+
+  .msg-content {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    margin: 0 6px;
+    padding-bottom: 20px;
+  }
+
+  .msg-quick {
+    display: flex;
+    justify-content: space-around;
+    padding: 22px 10px 18px;
+  }
+
+  .msg-quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+  }
+
+  .msg-quick-item:active .msg-quick-icon { transform: scale(0.92); }
+
+  .msg-quick-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+  }
+
+  .msg-quick-icon.q-pink { background: linear-gradient(135deg, #FF8A9E 0%, #FF5E7E 100%); }
+
+  .msg-quick-icon.q-cyan { background: linear-gradient(135deg, #36D1EE 0%, #00B4D8 100%); }
+
+  .msg-quick-icon.q-orange { background: linear-gradient(135deg, #FFB347 0%, #FF8C00 100%); }
+
+  .msg-quick-item span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+  }
+
+  .msg-list2 {
+    border-top: 1px solid #F2EFE8;
+    margin: 0 16px;
+  }
+
+  .msg-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    cursor: pointer;
+    border-bottom: 1px solid #F7F4EE;
+    transition: background 0.15s ease;
+  }
+
+  .msg-item:last-child { border-bottom: none; }
+
+  .msg-item:active { background: #FAF8F4; }
+
+  .msg-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .msg-avatar.c-blue { background: linear-gradient(135deg, #5B9BFF 0%, #2E7BE8 100%); }
+
+  .msg-avatar.c-pink { background: linear-gradient(135deg, #FFA5BC 0%, #FF7AA0 100%); }
+
+  .msg-item-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .msg-item-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .msg-item-preview {
+    font-size: 13px;
+    color: #9A958D;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .msg-item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  .msg-item-time {
+    font-size: 11px;
+    color: #C4BFB7;
+  }
+
+  .msg-item-badge {
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background: #FF7A00;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    padding: 0 5px;
+  }
+
+
+  /* ===== 消息页容器 ===== */
+  #msg-view {
+    background: #F5F2ED;
+  }
+
+
+/* 状态栏渐变背景 */
+.status-bar-fixed {
+  background: linear-gradient(180deg, rgba(255,130,12,0.1) 0%, rgba(255,130,12,0.08) 100%) !important;
+  display: flex !important;
+  transition: background 0.2s ease;
+}
+
+.status-bar-fixed.white-bg {
+  background: #fff !important;
+}
+
+  /* ========== 地点及周边 ========== */
+  .place-around {
+    padding: 16px;
+  }
+
+  .around-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+
+  /* 所在位置卡片 */
+  .location-card {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 28px;
+  }
+
+  .location-card-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 14px;
+    flex-shrink: 0;
+  }
+
+  .location-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .location-card-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+  }
+
+  .location-card-meta {
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .location-card-btn {
+    font-size: 15px;
+    color: #FF820C;
+    font-weight: 500;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  /* 附近机位 */
+  .nearby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .nearby-toggle {
+    display: flex;
+    background: #f5f5f5;
+    border-radius: 16px;
+    padding: 3px;
+  }
+
+  .nearby-toggle-item {
+    padding: 5px 16px;
+    font-size: 13px;
+    color: #666;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+
+  .nearby-toggle-item.active {
+    background: #fff;
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+  /* 地图预览 */
+  .map-preview {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+    background: #e8f5e9;
+  }
+
+  .map-preview-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .map-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .map-marker-icon {
+    width: 48px;
+    height: 48px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .map-marker-label {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #2E7D32;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .map-enter-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: #fff;
+    color: #FF820C;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  /* 附近机位列表 */
+  .nearby-list {
+    margin-bottom: 28px;
+  }
+  .nearby-list-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+    cursor: grab;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nearby-list-scroll.dragging {
+    cursor: grabbing;
+  }
+  .nearby-list-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .nearby-card {
+    position: relative;
+    flex-shrink: 0;
+    width: 122px;
+    height: 122px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .nearby-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .nearby-card-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 周边配套 */
+  .facilities-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+  }
+  .facilities-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .facilities-grid {
+    cursor: grab;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .facilities-grid.dragging {
+    cursor: grabbing;
+  }
+
+  .facility-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    border-radius: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 140px;
+    height: 100px;
+  }
+
+  .facility-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .facility-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .facility-name {
+    font-size: 14px;
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+
+
+  /* ========== 滚动吸附导航栏 ========== */
+  .place-sticky-header {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    box-sizing: border-box;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    border-bottom: none;
+  }
+
+  .place-sticky-header.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .place-sticky-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .place-sticky-back {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .place-sticky-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .place-sticky-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .place-sticky-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* 顶部内容隐藏 */
+  .place-top-content.hidden {
+    display: none;
+  }
+  
+  /* Tab视图下：去掉Tab栏顶部圆角，内容区域背景纯白色 */
+  .place-scroll.tab-view {
+    background: #fff;
+  }
+  
+  .place-scroll.tab-view .place-tabs {
+    border-radius: 0;
+    background: #fff;
+  }
+  
+  .place-scroll.tab-view .place-notes-card {
+    background: #fff;
+  }
+  
+  .place-scroll.tab-view .place-around {
+    background: #fff;
+  }
+
+
+
+  /* 打卡弹窗 */
+  .checkin-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .checkin-modal-overlay.show {
+    display: flex;
+  }
+  
+  .checkin-modal {
+    width: 100%;
+    max-width: 375px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 20px;
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  .checkin-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .checkin-modal-close svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .checkin-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 170px;
+    padding-top: 30px;
+    box-sizing: border-box;
+  }
+  
+  /* 加载动画 */
+  .checkin-loading {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  
+  .checkin-loading-ring {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 130, 12, 0.2);
+    border-top-color: #FF820C;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .checkin-loading-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  
+  /* 成功状态 */
+  .checkin-success {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .checkin-success.show {
+    display: flex;
+  }
+  
+  .checkin-success-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    background: transparent;
+    border: 4px solid #FF820C;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .checkin-success-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .checkin-success-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  
+  .checkin-success-desc {
+    font-size: 15px;
+    color: #999;
+    margin-top: 25px;
+  }
+  
+  .checkin-loading.hide {
+    display: none;
+  }
+
+
+  /* 收藏成功弹窗 */
+  .collect-toast {
+    position: fixed;
+    top: calc(50% + 300px);
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(80, 80, 80, 0.92);
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 280px;
+    max-width: 320px;
+  }
+  .collect-toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+  .collect-toast-icon {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .collect-toast-text {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .collect-toast-action {
+    font-size: 15px;
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  /* 收藏图标动画 */
+  .place-sticky-icon.collecting svg {
+    animation: collectPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes collectPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+  <div id="place-detail" class="view">
+    <!-- 顶部导航 -->
+    <div class="place-top">
+      <div class="place-back" id="placeBackBtn" onclick="goBack('post-detail')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="place-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#999" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>晓霞弄附近餐厅</span>
+      </div>
+      <div class="place-icon-btn" id="placeCheckBtn" onclick="openCheckinModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3C7.58 3 4 6.58 4 11c0 3.2 2 6 4.5 8 1 0.8 2 1.5 3.5 1.5s2.5-0.7 3.5-1.5c2.5-2 4.5-4.8 4.5-8c0-4.42-3.58-8-8-8z" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /><path d="M9 11.5l2 2 4-4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="place-icon-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-6 6" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10H8a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- 滚动吸附导航栏 -->
+    <div class="place-sticky-header" id="placeStickyHeader">
+      <div class="place-sticky-left">
+        <div class="place-sticky-back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="place-sticky-title">晓霞弄</span>
+      </div>
+      <div class="place-sticky-right">
+        <div class="place-sticky-icon" id="placeCollectBtn" onclick="togglePlaceCollect()">
+          <svg id="placeCollectIcon" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </div>
+        <div class="place-sticky-icon" id="stickyCheckBtn" onclick="openCheckinModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3C7.58 3 4 6.58 4 11c0 3.2 2 6 4.5 8 1 0.8 2 1.5 3.5 1.5s2.5-0.7 3.5-1.5c2.5-2 4.5-4.8 4.5-8c0-4.42-3.58-8-8-8z" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /><path d="M9 11.5l2 2 4-4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="place-sticky-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-6 6" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10H8a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 内容滚动区 -->
+    <div class="place-scroll">
+    <!-- 顶部内容（图片轮播+晓霞弄信息卡片） -->
+    <div class="place-top-content">
+    <!-- 图片轮播 -->
+    <div class="place-gallery" onclick="goPage('album')" style="cursor: pointer;">
+      <div class="place-gallery-images" id="placeGalleryImages">
+        <img src="assets/xiaoxianong_album_1.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_2.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_3.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_4.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_5.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_6.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_7.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+        <img src="assets/xiaoxianong_album_8.jpg" class="place-gallery-img" style="width: calc((100% - 16px) / 3); flex-shrink: 0;">
+      </div>
+      <div class="place-gallery-count">相册 1/8</div>
+    </div>
+
+
+      <!-- 标题信息卡片 -->
+      <div class="place-info-card">
+      <!-- 标题行 -->
+      <div class="place-title-row">
+        <h1 class="place-name">晓霞弄</h1>
+        <div class="place-fav-count" id="placeFavCount" onclick="togglePlaceCollect()" style="cursor:pointer;">
+          <svg id="placeFavIcon" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#666" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span id="placeFavNum">436</span>
+        </div>
+      </div>
+
+      <!-- 评分 -->
+      <div class="place-rating">
+        <div class="place-stars">
+          <span class="star-full">♥</span><span class="star-full">♥</span><span class="star-full">♥</span><span class="star-full">♥</span><span class="star-half">♥</span>
+        </div>
+        <span class="place-score">4.7评分</span>
+        <span class="place-reviews">48条评价 ></span>
+      </div>
+
+      <!-- 标签 -->
+      <div class="place-tags">
+        <span>人文景观</span>
+        <span>西湖</span>
+        <span>杭州热门地点</span>
+      </div>
+
+      <!-- 榜单标签 -->
+      <div class="place-badges">
+        <span class="place-badge rank">上城区拍照打卡地榜 · 第1名 ></span>
+        <span class="place-badge">1w+人来过</span>
+      </div>
+
+      <!-- 分隔线 -->
+      <div class="place-divider"></div>
+
+      <!-- 地址导航 -->
+      <div class="place-address-row">
+        <div class="place-address" onclick="goPage('navigation')">
+          <span class="place-address-text">杭州市十五奎巷与中山南路交叉口西140米 ></span>
+          <span class="place-distance">驾车13.4公里，预计18分钟</span>
+        </div>
+        <div class="place-nav-btn-small" onclick="goPage('navigation')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3L3 20l9-4 9 4L12 3z" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span>导航</span>
+        </div>
+      </div>
+
+      </div>
+    </div>
+    <!-- Tab切换 -->
+    <div class="place-tabs">
+        <span class="place-tab active" data-place-tab="notes">笔记</span>
+        <span class="place-tab" data-place-tab="around">地点及周边</span>
+      </div>
+
+      <!-- Tab内容容器 -->
+      <div class="place-tab-content-wrapper">
+      <!-- 笔记卡片 -->
+      <div class="place-notes-card">
+      <!-- 笔记瀑布流 -->
+      <div class="place-notes" id="placeNotes">
+        <div class="place-note-card">
+          <img src="assets/xiaoxianong.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">除了西湖，会带每个来杭州的朋友来这citywalk</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar2.png" class="place-note-avatar">
+              <span class="place-note-author">城市漫游者</span>
+              <span class="place-note-like">♡ 267</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/post2.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">逛西湖想拍出神图，就看这篇机位</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar1.png" class="place-note-avatar">
+              <span class="place-note-author">窗边摄影师</span>
+              <span class="place-note-like">♡ 238</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/post3.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">杭州老巷citywalk路线，人少出片</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar3.png" class="place-note-avatar">
+              <span class="place-note-author">拾光记录者</span>
+              <span class="place-note-like">♡ 189</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/xiaoxianong2.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">望仙阁最佳拍摄时间分享</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar4.png" class="place-note-avatar">
+              <span class="place-note-author">橘点点</span>
+              <span class="place-note-like">♡ 156</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/post4.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">晓霞弄巷子里的光影，随手拍都是大片</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar5.png" class="place-note-avatar">
+              <span class="place-note-author">巷弄摄影师</span>
+              <span class="place-note-like">♡ 142</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/post5.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">十五奎巷的烟火气，杭州最有味道的老街</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar6.png" class="place-note-avatar">
+              <span class="place-note-author">人间记录者</span>
+              <span class="place-note-like">♡ 198</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/post6.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">杭州小众拍照地推荐，人少景美超出片</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar7.png" class="place-note-avatar">
+              <span class="place-note-author">旅行种草机</span>
+              <span class="place-note-like">♡ 312</span>
+            </div>
+          </div>
+        </div>
+        <div class="place-note-card">
+          <img src="assets/xiaoxianong3.jpg" class="place-note-img">
+          <div class="place-note-info">
+            <div class="place-note-title">老杭州的记忆，藏在这些巷弄里</div>
+            <div class="place-note-bottom">
+              <img src="assets/avatar8.png" class="place-note-avatar">
+              <span class="place-note-author">旧城故事</span>
+              <span class="place-note-like">♡ 175</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 地点及周边 -->
+      <div class="place-around" id="placeAround" style="display:none;">
+        <!-- 所在位置 -->
+        <div class="around-section-title">所在位置</div>
+        <div class="location-card" onclick="goPage('all-spots');">
+          <img class="location-card-img" src="https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=200&h=200&fit=crop" alt="晓霞弄">
+          <div class="location-card-info">
+            <div class="location-card-name">晓霞弄</div>
+            <div class="location-card-meta">12个热门机位</div>
+          </div>
+          <div class="location-card-btn">查看详情</div>
+        </div>
+
+        <!-- 附近机位 -->
+        <div class="nearby-header">
+          <div class="around-section-title" style="margin-bottom:0;">附近机位</div>
+          <div class="nearby-toggle">
+            <span class="nearby-toggle-item active">地图</span>
+            <span class="nearby-toggle-item">列表</span>
+          </div>
+        </div>
+        <div class="map-preview">
+          <img class="map-preview-img" src="assets/nearby-map.png" alt="地图">
+          <div class="map-enter-btn">进入地图 ></div>
+        </div>
+        <div class="nearby-list" style="display:none;">
+          <div class="nearby-list-scroll">
+            <div class="nearby-card">
+              <img src="assets/nearby-spot1.jpg" alt="机位1">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nearby-card">
+              <img src="assets/nearby-spot2.jpg" alt="机位2">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nearby-card">
+              <img src="assets/nearby-spot3.jpg" alt="机位3">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nearby-card">
+              <img src="assets/nearby-spot4.jpg" alt="机位4">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nearby-card">
+              <img src="assets/nearby-spot5.jpg" alt="机位5">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nearby-card">
+              <img src="assets/nearby-spot6.jpg" alt="机位6">
+              <div class="nearby-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 11.5L21 3L13 21L10.5 13.5L3 11.5Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 周边配套 -->
+        <div class="around-section-title">周边配套</div>
+        <div class="facilities-grid" id="facilitiesGrid">
+          <div class="facility-item">
+            <div class="facility-icon">
+              <img src="assets/facility-restaurant.png" alt="餐厅">
+            </div>
+            <div class="facility-name">餐厅</div>
+          </div>
+          <div class="facility-item">
+            <div class="facility-icon">
+              <img src="assets/facility-store.png" alt="便利店">
+            </div>
+            <div class="facility-name">便利店</div>
+          </div>
+          <div class="facility-item">
+            <div class="facility-icon">
+              <img src="assets/facility-parking.png" alt="停车场">
+            </div>
+            <div class="facility-name">停车场</div>
+          </div>
+          <div class="facility-item">
+            <div class="facility-icon">
+              <img src="assets/facility-bus.png" alt="公共交通">
+            </div>
+            <div class="facility-name">公共交通</div>
+          </div>
+          <div class="facility-item">
+            <div class="facility-icon">
+              <img src="assets/facility-restroom.png" alt="厕所">
+            </div>
+            <div class="facility-name">厕所</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  <!-- 打卡弹窗 -->
+  <div class="checkin-modal-overlay" id="checkinModalOverlay">
+    <div class="checkin-modal">
+      <div class="checkin-modal-close" onclick="closeCheckinModal()">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="checkin-modal-content">
+        <!-- 加载状态 -->
+        <div class="checkin-loading" id="checkinLoading">
+          <div class="checkin-loading-ring"></div>
+        </div>
+        <div class="checkin-loading-text" id="checkinLoadingText">签到中</div>
+        
+        <!-- 成功状态 -->
+        <div class="checkin-success" id="checkinSuccess">
+          <div class="checkin-success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="#FF820C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          
+          <div class="checkin-success-title">签到成功</div>
+          <div class="checkin-success-desc">恭喜您又解锁一个新地点！</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+  // 地点详情页初始化
+  (function() {
+    document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+    var pd = document.getElementById('place-detail');
+    if (pd) pd.classList.add('active');
+
+    // Tab切换逻辑
+    var tabs = document.querySelectorAll('.place-tab');
+    var notesContent = document.getElementById('placeNotes');
+    var aroundContent = document.getElementById('placeAround');
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        // 移除所有tab的active类
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        // 给当前tab添加active类
+        tab.classList.add('active');
+
+        // 根据data-place-tab切换内容显示
+        var tabType = tab.getAttribute('data-place-tab');
+        if (tabType === 'notes') {
+          if (notesContent) notesContent.style.display = '';
+          if (aroundContent) aroundContent.style.display = 'none';
+        } else if (tabType === 'around') {
+          if (notesContent) notesContent.style.display = 'none';
+          if (aroundContent) aroundContent.style.display = '';
+        }
+      });
+    });
+
+    // 附近机位 地图/列表切换
+    var toggleItems = document.querySelectorAll('.nearby-toggle-item');
+    var mapPreview = document.querySelector('.map-preview');
+    var nearbyList = document.querySelector('.nearby-list');
+    toggleItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        toggleItems.forEach(function(t) { t.classList.remove('active'); });
+        item.classList.add('active');
+        if (item.textContent.trim() === '地图') {
+          mapPreview.style.display = 'block';
+          nearbyList.style.display = 'none';
+        } else {
+          mapPreview.style.display = 'none';
+          nearbyList.style.display = 'block';
+        }
+      });
+    });
+
+    // 滚动吸附导航栏
+    var stickyHeader = document.getElementById('placeStickyHeader');
+    var placeTop = document.querySelector('.place-top');
+    var placeScroll = document.querySelector('.place-scroll');
+    var placeInfoCard = document.querySelector('.place-info-card');
+    var topContent = document.querySelector('.place-top-content');
+    var statusBar = document.querySelector('.status-bar-fixed');
+    var isTabView = false;
+    var infoCardOffsetTop = placeInfoCard ? placeInfoCard.offsetTop : 300;
+
+    // 切换到Tab视图
+    function switchToTabView() {
+      if (isTabView) return;
+      isTabView = true;
+      if (stickyHeader) stickyHeader.classList.add('visible');
+      if (placeTop) placeTop.style.opacity = '0';
+      if (placeTop) placeTop.style.pointerEvents = 'none';
+      if (statusBar) statusBar.classList.add('white-bg');
+      if (topContent) topContent.classList.add('hidden');
+      if (placeScroll) placeScroll.classList.add('tab-view');
+      // 滚动到顶部，让Tab栏在最上面
+      if (placeScroll) placeScroll.scrollTop = 0;
+    }
+
+    // 切换回正常视图
+    function switchToNormalView() {
+      if (!isTabView) return;
+      isTabView = false;
+      if (stickyHeader) stickyHeader.classList.remove('visible');
+      if (placeTop) placeTop.style.opacity = '1';
+      if (placeTop) placeTop.style.pointerEvents = 'auto';
+      if (statusBar) statusBar.classList.remove('white-bg');
+      if (topContent) topContent.classList.remove('hidden');
+      if (placeScroll) placeScroll.classList.remove('tab-view');
+      // 恢复滚动位置到晓霞弄信息卡片位置
+      if (placeScroll && placeInfoCard) {
+        placeScroll.scrollTop = placeInfoCard.offsetTop - 10;
+      }
+    }
+
+    if (placeScroll) {
+      placeScroll.addEventListener('scroll', function() {
+        if (isTabView) return; // Tab视图下不监听滚动
+        var scrollTop = placeScroll.scrollTop;
+        // 当滚动到晓霞弄信息卡片位置时，切换到Tab视图
+        if (scrollTop >= infoCardOffsetTop) {
+          switchToTabView();
+        }
+      });
+    }
+
+    // 点击吸附导航栏的返回箭头时，切换回正常视图
+    var stickyBackBtn = document.querySelector('.place-sticky-back');
+    if (stickyBackBtn) {
+      stickyBackBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        switchToNormalView();
+      });
+      // 提示用户可以点击返回箭头回去
+      console.log('提示：下滑到笔记区域后，点击左上角返回箭头可回到顶部内容');
+    }
+  })();
+  </script>
+
+<script>
+  // 页面跳转统一使用 common.js 中的 goPage，这样才会记录返回路径
+  // 打卡弹窗逻辑
+  var checkinTimer = null;
+  
+  // 打卡状态记录（从localStorage读取）
+  var hasCheckedIn = false;
+  try {
+    hasCheckedIn = sessionStorage.getItem('jingdian_place_checkin') === 'true';
+  } catch (e) {}
+  
+  function openCheckinModal() {
+    // 如果已经打卡过了，直接取消打卡（恢复线框样式），不显示toast
+    if (hasCheckedIn) {
+      hasCheckedIn = false;
+      try { sessionStorage.setItem('jingdian_place_checkin', 'false'); } catch (e) {}
+      resetCheckinButtonStyle();
+      showToast('已取消打卡');
+      return;
+    }
+    
+    // 在函数内部重新获取元素，确保HTML已经加载
+    var checkinModalOverlay = document.getElementById('checkinModalOverlay');
+    var checkinLoading = document.getElementById('checkinLoading');
+    var checkinLoadingText = document.getElementById('checkinLoadingText');
+    var checkinSuccess = document.getElementById('checkinSuccess');
+    
+    if (!checkinModalOverlay) {
+      console.log('未找到打卡弹窗元素 checkinModalOverlay');
+      return;
+    }
+    
+    console.log('打开打卡弹窗');
+    
+    // 重置状态
+    if (checkinLoading) checkinLoading.classList.remove('hide');
+    if (checkinLoadingText) checkinLoadingText.style.display = 'block';
+    if (checkinSuccess) checkinSuccess.classList.remove('show');
+    
+    // 显示弹窗
+    checkinModalOverlay.classList.add('show');
+    
+    // 清除之前的定时器
+    if (checkinTimer) {
+      clearTimeout(checkinTimer);
+      checkinTimer = null;
+    }
+    
+    // 2秒后显示成功状态
+    checkinTimer = setTimeout(function() {
+      if (checkinLoading) checkinLoading.classList.add('hide');
+      if (checkinLoadingText) checkinLoadingText.style.display = 'none';
+      if (checkinSuccess) checkinSuccess.classList.add('show');
+      console.log('打卡成功');
+      // 标记为已打卡
+      hasCheckedIn = true;
+      try { sessionStorage.setItem('jingdian_place_checkin', 'true'); } catch (e) {}
+      // 更新打卡按钮的样式（变成已打卡状态）
+      updateCheckinButtonStyle();
+    }, 2000);
+  }
+  
+  // 重置打卡按钮的样式（恢复成线框样式）
+  function resetCheckinButtonStyle() {
+    var placeCheckBtnEl = document.getElementById('placeCheckBtn');
+    var stickyCheckBtnEl = document.getElementById('stickyCheckBtn');
+    
+    // 顶部打卡按钮：把对勾恢复成线框样式
+    if (placeCheckBtnEl) {
+      var svg = placeCheckBtnEl.querySelector('svg');
+      if (svg) {
+        var path = svg.querySelector('path');
+        if (path) {
+          path.setAttribute('fill', 'none');
+          path.setAttribute('stroke', '#1a1a1a');
+        }
+      }
+    }
+    
+    // 吸附导航栏打卡按钮：把对勾恢复成线框样式
+    if (stickyCheckBtnEl) {
+      var svg2 = stickyCheckBtnEl.querySelector('svg');
+      if (svg2) {
+        var path2 = svg2.querySelector('path');
+        if (path2) {
+          path2.setAttribute('fill', 'none');
+          path2.setAttribute('stroke', '#1a1a1a');
+        }
+      }
+    }
+  }
+  
+  // 更新打卡按钮的样式（变成已打卡状态）
+  function updateCheckinButtonStyle() {
+    var placeCheckBtnEl = document.getElementById('placeCheckBtn');
+    var stickyCheckBtnEl = document.getElementById('stickyCheckBtn');
+    
+    // 顶部打卡按钮：把对勾变成橙色实心
+    if (placeCheckBtnEl) {
+      var svg = placeCheckBtnEl.querySelector('svg');
+      if (svg) {
+        var path = svg.querySelector('path');
+        if (path) {
+          path.setAttribute('fill', '#FF820C');
+          path.setAttribute('stroke', '#FF820C');
+        }
+      }
+    }
+    
+    // 吸附导航栏打卡按钮：把对勾变成橙色实心
+    if (stickyCheckBtnEl) {
+      var svg2 = stickyCheckBtnEl.querySelector('svg');
+      if (svg2) {
+        var path2 = svg2.querySelector('path');
+        if (path2) {
+          path2.setAttribute('fill', '#FF820C');
+          path2.setAttribute('stroke', '#FF820C');
+        }
+      }
+    }
+  }
+  
+  function closeCheckinModal() {
+    var checkinModalOverlay = document.getElementById('checkinModalOverlay');
+    if (!checkinModalOverlay) return;
+    checkinModalOverlay.classList.remove('show');
+    if (checkinTimer) {
+      clearTimeout(checkinTimer);
+      checkinTimer = null;
+    }
+  }
+  
+  // 页面加载完成后，给遮罩层添加点击事件
+  document.addEventListener('DOMContentLoaded', function() {
+    var checkinModalOverlay = document.getElementById('checkinModalOverlay');
+    if (checkinModalOverlay) {
+      checkinModalOverlay.addEventListener('click', function(e) {
+        if (e.target === checkinModalOverlay) {
+          closeCheckinModal();
+        }
+      });
+    }
+  });
+  
+  // 打卡按钮已通过onclick内联事件绑定openCheckinModal()，无需额外绑定
+
+
+  // 页面加载后恢复收藏和打卡状态
+  window.addEventListener('load', function() {
+    if (placeCollected) {
+      const btn = document.getElementById('placeCollectBtn');
+      const icon = btn ? btn.querySelector('svg') : null;
+      const favIcon = document.getElementById('placeFavIcon');
+      const favNum = document.getElementById('placeFavNum');
+      if (icon) {
+        icon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#FF820C" stroke="#FF820C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      }
+      if (favIcon) {
+        favIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#FF820C" stroke="#FF820C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      }
+      if (favNum) favNum.textContent = '437';
+    }
+    if (hasCheckedIn) {
+      updateCheckinButtonStyle();
+    }
+  });
+
+  // 列表视图拖拽滚动（带惯性）
+  (function() {
+    const el = document.querySelector('.nearby-list-scroll');
+    if (!el) return;
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let dragMoved = false;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let animationId = null;
+
+    el.addEventListener('mousedown', (e) => {
+      isDown = true;
+      dragMoved = false;
+      el.classList.add('dragging');
+      startX = e.pageX;
+      scrollLeft = el.scrollLeft;
+      lastX = e.pageX;
+      lastTime = Date.now();
+      velocity = 0;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX;
+      const walk = (x - startX) * 1.5;
+      if (Math.abs(walk) > 3) dragMoved = true;
+      el.scrollLeft = scrollLeft - walk;
+      const now = Date.now();
+      const dt = now - lastTime;
+      if (dt > 0) {
+        velocity = (x - lastX) / dt;
+      }
+      lastX = x;
+      lastTime = now;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      el.classList.remove('dragging');
+      if (Math.abs(velocity) > 0.1) {
+        let currentVelocity = velocity * 15;
+        const friction = 0.95;
+        function inertia() {
+          if (Math.abs(currentVelocity) < 0.5) return;
+          el.scrollLeft -= currentVelocity;
+          currentVelocity *= friction;
+          animationId = requestAnimationFrame(inertia);
+        }
+        inertia();
+      }
+    });
+
+    // 拖拽时阻止点击
+    el.addEventListener('click', (e) => {
+      if (dragMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragMoved = false;
+      }
+    }, true);
+  })();
+
+  // 地点收藏功能
+  let placeCollected = false;
+  try {
+    placeCollected = sessionStorage.getItem('jingdian_place_collect') === 'true';
+  } catch (e) {}
+  let collectToastTimer = null;
+
+  function togglePlaceCollect() {
+    const btn = document.getElementById('placeCollectBtn');
+    const icon = document.getElementById('placeCollectIcon');
+    const favIcon = document.getElementById('placeFavIcon');
+    const favNum = document.getElementById('placeFavNum');
+    placeCollected = !placeCollected;
+
+    // 播放动画
+    btn.classList.remove('collecting');
+    void btn.offsetWidth; // 触发重绘
+    btn.classList.add('collecting');
+
+    if (placeCollected) {
+      try { sessionStorage.setItem('jingdian_place_collect', 'true'); } catch (e) {}
+      // 收藏：顶部按钮变成填充橘色
+      icon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#FF820C" stroke="#FF820C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      // 标题旁收藏也变成填充橘色，数字+1
+      if (favIcon) {
+        favIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#FF820C" stroke="#FF820C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      }
+      if (favNum) {
+        favNum.textContent = '437';
+      }
+      // 显示弹窗
+      showCollectToast();
+    } else {
+      try { sessionStorage.setItem('jingdian_place_collect', 'false'); } catch (e) {}
+      // 取消收藏：顶部按钮变回线框
+      icon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      // 标题旁收藏也变回线框，数字-1
+      if (favIcon) {
+        favIcon.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#666" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-linejoin="round" />';
+      }
+      if (favNum) {
+        favNum.textContent = '436';
+      }
+      // 显示取消收藏提示
+      showToast('已取消收藏');
+    }
+  }
+
+  function showCollectToast() {
+    const toast = document.getElementById('collectToast');
+    if (!toast) return;
+
+    // 清除之前的定时器
+    if (collectToastTimer) {
+      clearTimeout(collectToastTimer);
+      collectToastTimer = null;
+    }
+
+    // 显示弹窗
+    toast.classList.add('show');
+
+    // 2秒后自动消失
+    collectToastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+      collectToastTimer = null;
+    }, 2000);
+  }
+
+  // 周边配套拖拽滚动（带惯性）
+  (function() {
+    const el = document.getElementById('facilitiesGrid');
+    if (!el) return;
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let dragMoved = false;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let animationId = null;
+
+    el.addEventListener('mousedown', (e) => {
+      isDown = true;
+      dragMoved = false;
+      el.classList.add('dragging');
+      startX = e.pageX;
+      scrollLeft = el.scrollLeft;
+      lastX = e.pageX;
+      lastTime = Date.now();
+      velocity = 0;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX;
+      const walk = (x - startX) * 1.5;
+      if (Math.abs(walk) > 3) dragMoved = true;
+      el.scrollLeft = scrollLeft - walk;
+      const now = Date.now();
+      const dt = now - lastTime;
+      if (dt > 0) {
+        velocity = (x - lastX) / dt;
+      }
+      lastX = x;
+      lastTime = now;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      el.classList.remove('dragging');
+      if (Math.abs(velocity) > 0.1) {
+        let currentVelocity = velocity * 15;
+        const friction = 0.95;
+        function inertia() {
+          if (Math.abs(currentVelocity) < 0.5) return;
+          el.scrollLeft -= currentVelocity;
+          currentVelocity *= friction;
+          animationId = requestAnimationFrame(inertia);
+        }
+        inertia();
+      }
+    });
+
+    el.addEventListener('click', (e) => {
+      if (dragMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragMoved = false;
+      }
+    }, true);
+  })();
+</script>
+
+
+
+    </div>
+  </div>
+
+        
+        <!-- 成功状态 -->
+        <div class="checkin-success" id="checkinSuccess">
+          <div class="checkin-success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="#FF820C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          
+          <div class="checkin-success-title">签到成功</div>
+          <div class="checkin-success-desc">恭喜您又解锁一个新地点！</div>
+        </div>
+      </div>
+
+  <!-- 收藏成功弹窗 -->
+  <div class="collect-toast" id="collectToast">
+    <div class="collect-toast-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="collect-toast-text">收藏至"我-收藏-地点"</div>
+    <div class="collect-toast-action" onclick="goPage('mine')">去看看 ></div>
+  </div>
+</body>
+</html>

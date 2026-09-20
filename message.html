@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 消息</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="msg-view" class="view msg-page">
+    <div class="msg-top">
+      <div class="msg-tabs">
+        <span class="msg-tab active" data-msg-tab="all">消息<span class="msg-tab-dot" style="display:none;"></span></span>
+        <span class="msg-tab" data-msg-tab="friends">好友<span class="msg-tab-dot"></span></span>
+      </div>
+      <div class="msg-top-actions">
+        <button class="msg-icon-btn" data-msg-action="search" aria-label="搜索" onclick="goUrl('message-search.html')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><path d="M21 21l-4.35-4.35" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="msg-icon-btn" data-msg-action="add" aria-label="添加" onclick="toggleMsgAddMenu(event)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 加号弹窗菜单 -->
+    <div class="msg-add-menu" id="msgAddMenu">
+      <div class="msg-add-menu-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="7" r="4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M23 21v-2a4 4 0 00-3-3.87" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 3.13a4 4 0 010 7.75" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>发起群聊</span>
+      </div>
+      <div class="msg-add-menu-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8.5" cy="7" r="4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M20 8v6M23 11h-6" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>添加好友</span>
+      </div>
+      <div class="msg-add-menu-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 12h10" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>扫一扫</span>
+      </div>
+      <div class="msg-add-menu-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 11v6M14 11v6" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>删除消息</span>
+      </div>
+    </div>
+    <div class="msg-content">
+      <div class="msg-quick">
+        <div class="msg-quick-item" data-msg-quick="like">
+          <div class="msg-quick-icon q-pink">
+            <img src="assets/fi-sr-thumbs-up.png" width="34" height="34" alt="赞和喜欢">
+          </div>
+          <span>赞和喜欢</span>
+        </div>
+        <div class="msg-quick-item" data-msg-quick="comment">
+          <div class="msg-quick-icon q-cyan">
+            <img src="assets/fi-sr-comment.png" width="26" height="26" alt="评论">
+          </div>
+          <span>评论</span>
+        </div>
+        <div class="msg-quick-item" data-msg-quick="star">
+          <div class="msg-quick-icon q-orange">
+            <img src="assets/fi-sr-star.png" width="26" height="26" alt="收藏">
+          </div>
+          <span>收藏</span>
+        </div>
+      </div>
+      <div class="msg-list2">
+        <div class="msg-item" data-msg-item="system">
+          <div class="msg-avatar c-blue">
+            <img src="assets/fi-sr-bell.png" width="24" height="24" alt="系统消息">
+          </div>
+          <div class="msg-item-main">
+            <div class="msg-item-name">系统消息</div>
+            <div class="msg-item-preview">尊敬的用户，恭喜您注册成功！完...</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">刚刚</span>
+            <span class="msg-item-badge">2</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="assistant">
+          <div class="msg-avatar c-pink">
+            <img src="assets/fi-sr-volume.png" width="24" height="24" alt="你的小助手">
+          </div>
+          <div class="msg-item-main">
+            <div class="msg-item-name">你的小助手</div>
+            <div class="msg-item-preview">床边摄影师关注了你</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">刚刚</span>
+            <span class="msg-item-badge">2</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user4" onclick="markMsgRead('user4')">
+          <div class="msg-avatar-wrap">
+            <img class="msg-avatar" src="assets/avatar4.png" alt="橘点点">
+            <div class="msg-online-dot"></div>
+          </div>
+          <div class="msg-item-main">
+            <div class="msg-item-name">橘点点</div>
+            <div class="msg-item-preview">建议带个小补光，环境光偏暗</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">上午10:22</span>
+            <span class="msg-item-badge">3</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user1">
+          <img class="msg-avatar" src="assets/avatar1.png" alt="窗边摄影师">
+          <div class="msg-item-main">
+            <div class="msg-item-name">窗边摄影师</div>
+            <div class="msg-item-preview">你好！看你笔记在晓霞弄</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">昨天</span>
+            <span class="msg-item-badge">14</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user6">
+          <img class="msg-avatar" src="assets/avatar6.png" alt="天气真好">
+          <div class="msg-item-main">
+            <div class="msg-item-name">天气真好</div>
+            <div class="msg-item-preview">请问这边可以使用三脚架吗？</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">昨天</span>
+            <span class="msg-item-badge">2</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user2">
+          <img class="msg-avatar" src="assets/avatar2.png" alt="城市漫游者">
+          <div class="msg-item-main">
+            <div class="msg-item-name">城市漫游者</div>
+            <div class="msg-item-preview">没问题，到时候机位见！</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">星期天</span>
+            <span class="msg-item-badge">2</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user3">
+          <img class="msg-avatar" src="assets/avatar3.png" alt="拾光记录者">
+          <div class="msg-item-main">
+            <div class="msg-item-name">拾光记录者</div>
+            <div class="msg-item-preview">好嘞感谢！打算周末穿汉服过去拍</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">2026-07-04</span>
+            <span class="msg-item-badge">6</span>
+          </div>
+        </div>
+        <div class="msg-item" data-msg-item="user5">
+          <img class="msg-avatar" src="assets/avatar5.png" alt="机位搜寻专家">
+          <div class="msg-item-main">
+            <div class="msg-item-name">机位搜寻专家</div>
+            <div class="msg-item-preview">学到了，感谢分享经验</div>
+          </div>
+          <div class="msg-item-right">
+            <span class="msg-item-time">2026-05-18</span>
+            <span class="msg-item-badge">16</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 弹窗遮罩 -->
+  <div class="msg-add-mask" id="msgAddMask" onclick="toggleMsgAddMenu()"></div>
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <div class="nav-item" data-page="home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>广场</span>
+    </div>
+    <div class="nav-item" data-page="map">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>地图</span>
+    </div>
+    <div class="nav-publish-wrap">
+      <div class="nav-publish" onclick="goPage('publish')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="nav-item" data-page="msg">
+      <div class="nav-icon-rel">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-badge">99+</span>
+      </div>
+      <span>消息</span>
+    </div>
+    <div class="nav-item" data-page="mine">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>我的</span>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      sessionStorage.removeItem('jdd_read');
+      // 只保留橘点点的已读状态，清除其他消息的
+      var readMsgs = JSON.parse(sessionStorage.getItem('read_msgs') || '[]');
+      var jddRead = readMsgs.indexOf('user4') !== -1;
+      sessionStorage.setItem('read_msgs', JSON.stringify(jddRead ? ['user4'] : []));
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('msg-view');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) sb.classList.add('show');
+      var bn = document.querySelector('.bottom-nav');
+      if (bn) bn.classList.add('show');
+      var navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(function(item) {
+        if (item.getAttribute('data-page') === 'msg') item.classList.add('active');
+      });
+      navItems.forEach(function(item) {
+        item.addEventListener('click', function() { goPage(item.getAttribute('data-page')); });
+      });
+    })();
+    
+    // 加号弹窗菜单
+    function toggleMsgAddMenu(e) {
+      if (e) e.stopPropagation();
+      var menu = document.getElementById('msgAddMenu');
+      var mask = document.getElementById('msgAddMask');
+      if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+        mask.style.display = 'none';
+      } else {
+        menu.style.display = 'block';
+        mask.style.display = 'block';
+      }
+    }
+  
+
+
+    // 标签栏切换逻辑
+    var msgTabs = document.querySelectorAll('.msg-tab');
+    msgTabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        msgTabs.forEach(function(t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        
+        // 切换小圆点位置：当前选中的标签不显示小圆点，未选中的显示
+        var tabName = tab.getAttribute('data-msg-tab');
+        var allDot = document.querySelector('[data-msg-tab="all"] .msg-tab-dot');
+        var friendsDot = document.querySelector('[data-msg-tab="friends"] .msg-tab-dot');
+        
+        if (tabName === 'all') {
+          // 选中消息，小圆点在好友上
+          if (allDot) allDot.style.display = 'none';
+          if (friendsDot) friendsDot.style.display = 'block';
+        } else {
+          // 选中好友，小圆点在消息上
+          if (allDot) allDot.style.display = 'block';
+          if (friendsDot) friendsDot.style.display = 'none';
+        }
+      });
+    });
+    
+    // 标记消息已读并跳转
+    function markMsgRead(msgId) {
+      var readMsgs = JSON.parse(sessionStorage.getItem('read_msgs') || '[]');
+      if (readMsgs.indexOf(msgId) === -1) {
+        readMsgs.push(msgId);
+        sessionStorage.setItem('read_msgs', JSON.stringify(readMsgs));
+      }
+      goPage('chat');
+    }
+    
+    // 页面加载时隐藏已读消息的未读标记（只处理橘点点user4）
+    function hideReadBadges() {
+      var readMsgs = JSON.parse(sessionStorage.getItem('read_msgs') || '[]');
+      if (readMsgs.indexOf('user4') !== -1) {
+        var item = document.querySelector('[data-msg-item="user4"]');
+        if (item) {
+          var badge = item.querySelector('.msg-item-badge');
+          if (badge) badge.style.display = 'none';
+        }
+      }
+    }
+    
+    // 执行
+    hideReadBadges();
+</script>
+</body>
+</html>

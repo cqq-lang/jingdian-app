@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 搜索</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="search" class="view">
+    <!-- 顶部搜索栏 -->
+    <div class="search-top">
+      <div class="search-back" onclick="goBack('home')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="search-input-wrap">
+        <input class="search-input-full" placeholder="西湖有什么出片机位？">
+        <svg class="search-camera" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <button class="search-submit">搜索</button>
+      </div>
+    </div>
+
+    <!-- 历史搜索 -->
+    <div class="history-section">
+      <div class="section-header">
+        <span>历史搜索</span>
+        <svg class="history-clear" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="history-tags-wrap">
+        <div class="history-tags">
+          <div class="history-tag">西湖拍照</div>
+          <div class="history-tag">citywalk</div>
+          <div class="history-tag">中山北路</div>
+          <div class="history-tag">找陪拍</div>
+          <div class="history-tag">老街区氛围感</div>
+          <div class="history-tag">城市夜景打卡</div>
+          <div class="history-more">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 猜你想搜 -->
+    <div class="suggest-section">
+      <div class="section-header">
+        <span>猜你想搜</span>
+      </div>
+      <div class="suggest-grid">
+        <div class="suggest-item">城市日落绝美机位</div>
+        <div class="suggest-item">俯瞰视野</div>
+        <div class="suggest-item">蓝调夜景拍摄</div>
+        <div class="suggest-item">日系人像</div>
+        <div class="suggest-item">老城街巷</div>
+        <div class="suggest-item">隧道光影出片</div>
+        <div class="suggest-item">江边晚风氛围感</div>
+        <div class="suggest-item">雨天慢门摄影</div>
+        <div class="suggest-item">古风建筑拍照圣地</div>
+        <div class="suggest-item">运河沿岸黄昏打卡</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帖子详情页 -->
+  <!-- 键盘弹窗 -->
+  <div class="keyboard-popup">
+    <img src="assets/keyboard.png" alt="键盘">
+  </div>
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('search');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        sb.style.background = '#F5F2ED';
+      }
+      // 页面打开时自动弹出键盘
+      setTimeout(function() {
+        var kp = document.querySelector('.keyboard-popup');
+        if (kp) kp.classList.add('show');
+      }, 100);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>镜点 - 发布</title>
+<link rel="stylesheet" href="assets/common.css">
+</head>
+<body>
+  <div class="phone">
+  <div id="publish-view" class="view publish-page">
+    <div class="publish-header">
+      <div class="publish-back" onclick="closePublishPage()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="publish-title">发布</div>
+    </div>
+    
+    <div class="publish-tabs">
+      <div class="publish-tab active" onclick="switchPublishTab(this, 'post')">发布帖子</div>
+      <div class="publish-tab" onclick="switchPublishTab(this, 'spot')">创建机位</div>
+    </div>
+    
+    <div class="publish-scroll-area">
+      <div class="publish-content" id="publishPostContent">
+        <div class="publish-card">
+          <div class="publish-images">
+            <div class="publish-image-item">
+              <img src="assets/xiaoxianong.jpg" alt="已选图片">
+            </div>
+            <div class="publish-image-add">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="#999" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+          
+          <input type="text" class="publish-title-input" placeholder="给作品添加一个标题吧">
+          
+          <textarea class="publish-content-input" placeholder="分享拍摄心得、参数设置、或背后的故事..."></textarea>
+          
+          <div class="publish-tags">
+            <div class="publish-tag-btn">
+              <span style="color: #FF7A00; font-weight: 600;">#</span>
+              <span>标签</span>
+            </div>
+            <div class="publish-tag-btn">
+              <span style="color: #FF7A00; font-weight: 600;">@</span>
+              <span>用户</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="publish-settings">
+          <div class="publish-setting-item">
+            <div class="publish-setting-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>添加地点</span>
+            </div>
+            <div class="publish-setting-right">
+              <span>选择位置</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M6 9l6 6 6-6" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="publish-setting-item">
+            <div class="publish-setting-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>公开可见</span>
+            </div>
+            <div class="publish-setting-right">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M6 9l6 6 6-6" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="publish-setting-item">
+            <div class="publish-setting-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="7 10 12 15 17 10" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="15" x2="12" y2="3" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>允许下载</span>
+            </div>
+            <div class="publish-switch"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 创建机位内容 -->
+      <div class="publish-content" id="publishSpotContent" style="display:none;">
+        <!-- 机位信息 -->
+        <div class="spot-create-section">
+          <div class="spot-create-title">机位信息</div>
+          <div class="spot-create-row">
+            <div class="spot-create-label">封面<span class="required">*</span></div>
+            <div class="spot-create-cover">
+              <img src="assets/xiaoxianong.jpg" alt="封面">
+            </div>
+          </div>
+          <div class="spot-create-row">
+            <div class="spot-create-label">名称<span class="required">*</span></div>
+            <input type="text" class="spot-create-input" placeholder="例如：晓霞弄-小巷文字墙及望仙阁">
+          </div>
+          <div class="spot-create-row">
+            <div class="spot-create-label">位置<span class="required">*</span></div>
+            <div class="spot-create-input spot-create-select">
+              <span>选择机位具体位置</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 拍摄技巧 -->
+        <div class="spot-create-section">
+          <div class="spot-create-title">拍摄技巧</div>
+          <div class="spot-create-textarea-wrap">
+            <textarea class="spot-create-textarea" placeholder="介绍拍照机位/构图/相机参数等信息"></textarea>
+            <div class="spot-create-upload-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>上传图片</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 图文步导 -->
+        <div class="spot-create-section">
+          <div class="spot-create-title spot-create-title-flex">
+            <span>图文步导</span>
+            <span class="spot-create-add-step">+ 添加步骤</span>
+          </div>
+          
+          <!-- 步骤1 -->
+          <div class="spot-create-step">
+            <div class="spot-create-step-num">1</div>
+            <div class="spot-create-step-content">
+              <div class="spot-create-step-input">从鼓楼公车站下车后，往回走。</div>
+              <div class="spot-create-step-image">
+                <img src="assets/b525af41ed20b5574d02ce2c5bf9b814.jpg" alt="步骤配图">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 步骤2 -->
+          <div class="spot-create-step">
+            <div class="spot-create-step-num">2</div>
+            <div class="spot-create-step-content">
+              <div class="spot-create-step-input">写一写怎么找到具体机位</div>
+              <div class="spot-create-step-add-image">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="#999" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>添加步骤配图</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 补充描述 -->
+        <div class="spot-create-section">
+          <div class="spot-create-title">补充描述</div>
+          <textarea class="spot-create-textarea spot-create-desc" placeholder="机位特色、周边设施、其他需要说明的信息..."></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <div class="publish-bottom-bar">
+      <div class="publish-draft-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="14 2 14 8 20 8" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>存草稿</span>
+      </div>
+      <div class="publish-submit-btn" id="publishSubmitBtn">保存并发布</div>
+    </div>
+  </div>
+
+  <!-- ===== 热门机位页面 ===== -->
+  <!-- 状态栏（固定顶部） -->
+  <div class="status-bar status-bar-fixed">
+    <span class="status-time">9:00</span>
+    <div class="status-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="5" y="5.5" width="3" height="6.5" rx="0.5" fill="#1a1a1a"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1a1a1a"/><rect x="15" y="0.5" width="3" height="11.5" rx="0.5" fill="#1a1a1a"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#1a1a1a"/><path d="M3.5 6.2a6.4 6.4 0 019 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M1 3.5a10 10 0 0114 0" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="#1a1a1a" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round" /><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1a1a1a"/><rect x="24" y="3.5" width="1.5" height="5" rx="0.75" fill="#1a1a1a" opacity="0.4"/></svg>
+    </div>
+  </div>
+  </div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var current = document.getElementById('publish-view');
+      if (current) current.classList.add('active');
+      var sb = document.querySelector('.status-bar-fixed');
+      if (sb) {
+        sb.classList.add('show');
+        // 设置状态栏背景色为#F5F2ED，和页面内容背景色一致
+        sb.style.background = '#F5F2ED';
+      }
+    })();
+    
+    // 发布页面标签切换
+    function switchPublishTab(el, type) {
+      document.querySelectorAll('.publish-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      
+      var postContent = document.getElementById('publishPostContent');
+      var spotContent = document.getElementById('publishSpotContent');
+      var submitBtn = document.getElementById('publishSubmitBtn');
+      
+      if (type === 'post') {
+        postContent.style.display = 'block';
+        spotContent.style.display = 'none';
+        submitBtn.textContent = '保存并发布';
+      } else {
+        postContent.style.display = 'none';
+        spotContent.style.display = 'block';
+        submitBtn.textContent = '创建机位';
+      }
+    }
+  </script>
+</body>
+</html>
