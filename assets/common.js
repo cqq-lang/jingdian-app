@@ -161,89 +161,184 @@ function goBack(fallback, targetUrl) {
     }, 2000);
   }
 
-  // ===== 获取验证码倒计时 =====
-  const codeBtn = document.getElementById('codeBtn');
-  const phoneInput = document.getElementById('phone');
-  let countdown = 0;
-  let countdownTimer = null;
+  // ===== 手机号与验证码校验（登录页、注册页共用） =====
+  // 手机号为 11 位、1 开头、第二位为 3 到 9
+  var PHONE_RE = /^1[3-9]\d{9}$/;
+  // 验证码为 6 位数字
+  var CODE_RE = /^\d{6}$/;
+  // 演示用验证码，接入短信服务后由服务端下发
+  var DEMO_CODE = '123456';
 
-  codeBtn.addEventListener('click', () => {
-    const phone = phoneInput.value.trim();
-    if (!/^1\d{10}$/.test(phone)) {
-      showToast('请输入正确的手机号');
-      return;
+  function fieldGroupOf(input) {
+    return input && input.closest ? input.closest('.input-group') : null;
+  }
+
+  // 在输入框下方给出错误提示，并标红输入框
+  function setFieldError(input, msg) {
+    var group = fieldGroupOf(input);
+    if (!group || !group.classList) return;
+    group.classList.add('has-error');
+    var tip = group.querySelector('.input-error-text');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'input-error-text';
+      group.appendChild(tip);
     }
-    if (countdown > 0) return;
+    tip.textContent = msg;
+  }
 
-    showToast('验证码已发送');
-    countdown = 60;
-    codeBtn.disabled = true;
-    codeBtn.textContent = countdown + 's后重发';
+  function clearFieldError(input) {
+    var group = fieldGroupOf(input);
+    if (!group || !group.classList) return;
+    group.classList.remove('has-error');
+    var tip = group.querySelector('.input-error-text');
+    if (tip) tip.textContent = '';
+  }
 
-    countdownTimer = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        clearInterval(countdownTimer);
-        codeBtn.disabled = false;
-        codeBtn.textContent = '获取验证码';
-      } else {
-        codeBtn.textContent = countdown + 's后重发';
+  // 用户重新输入时清除该输入框的错误状态
+  function bindFieldClear(input) {
+    if (!input || !input.addEventListener) return;
+    input.addEventListener('input', function () { clearFieldError(input); });
+  }
+
+  function setAgreementError(on) {
+    var box = document.querySelector('.agreement');
+    if (box && box.classList) box.classList.toggle('error', !!on);
+  }
+
+  // 获取验证码：先校验手机号，再进入 60 秒倒计时
+  function bindCodeButton(btn, input, state) {
+    if (!btn || !btn.addEventListener) return;
+    var left = 0;
+    var timer = null;
+    btn.addEventListener('click', function () {
+      var phone = input.value.trim();
+      clearFieldError(input);
+      if (!PHONE_RE.test(phone)) {
+        setFieldError(input, '请输入 11 位手机号');
+        showToast('请输入正确的手机号');
+        return;
       }
-    }, 1000);
-  });
+      if (left > 0) return;
+      state.sent = true;
+      state.phone = phone;
+      showToast('验证码已发送，演示验证码 ' + DEMO_CODE);
+      left = 60;
+      btn.disabled = true;
+      btn.textContent = left + 's后重发';
+      timer = setInterval(function () {
+        left--;
+        if (left <= 0) {
+          clearInterval(timer);
+          btn.disabled = false;
+          btn.textContent = '获取验证码';
+        } else {
+          btn.textContent = left + 's后重发';
+        }
+      }, 1000);
+    });
+  }
+
+  // 提交前的整体校验：手机号、验证码、协议勾选
+  function validateAccountForm(phoneInput, codeInput, agreeCheck, state) {
+    var phone = phoneInput.value.trim();
+    var code = codeInput.value.trim();
+    clearFieldError(phoneInput);
+    clearFieldError(codeInput);
+
+    if (!PHONE_RE.test(phone)) {
+      var phoneMsg = phone ? '手机号格式不正确' : '请输入手机号';
+      setFieldError(phoneInput, phoneMsg);
+      showToast(phoneMsg);
+      return false;
+    }
+    if (!state.sent || state.phone !== phone) {
+      setFieldError(codeInput, '请先获取验证码');
+      showToast('请先获取验证码');
+      return false;
+    }
+    if (!CODE_RE.test(code)) {
+      var codeMsg = code ? '请输入 6 位数字验证码' : '请输入验证码';
+      setFieldError(codeInput, codeMsg);
+      showToast(codeMsg);
+      return false;
+    }
+    if (code !== DEMO_CODE) {
+      setFieldError(codeInput, '验证码不正确');
+      showToast('验证码不正确');
+      return false;
+    }
+    if (!agreeCheck.checked) {
+      setAgreementError(true);
+      showToast('请先阅读并同意用户协议和隐私政策');
+      return false;
+    }
+    setAgreementError(false);
+    return true;
+  }
+
+  function bindSubmitByEnter(inputs, btn) {
+    inputs.forEach(function (input) {
+      if (!input || !input.addEventListener) return;
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') btn.click();
+      });
+    });
+  }
 
   // ===== 登录 =====
-  const loginBtn = document.getElementById('loginBtn');
-  const codeInput = document.getElementById('code');
-  const agreeCheck = document.getElementById('agreeCheck');
+  var codeBtn = document.getElementById('codeBtn');
+  var phoneInput = document.getElementById('phone');
+  var codeInput = document.getElementById('code');
+  var agreeCheck = document.getElementById('agreeCheck');
+  var loginBtn = document.getElementById('loginBtn');
+  var loginState = { sent: false, phone: '' };
 
-  loginBtn.addEventListener('click', () => {
+  bindFieldClear(phoneInput);
+  bindFieldClear(codeInput);
+  bindCodeButton(codeBtn, phoneInput, loginState);
+
+  if (agreeCheck && agreeCheck.addEventListener) {
+    agreeCheck.addEventListener('change', function () {
+      if (agreeCheck.checked) setAgreementError(false);
+    });
+  }
+
+  loginBtn.addEventListener('click', function () {
+    if (!validateAccountForm(phoneInput, codeInput, agreeCheck, loginState)) return;
     showToast('登录成功');
-    setTimeout(() => { goPage('home'); }, 500);
+    setTimeout(function () { goPage('home'); }, 600);
   });
+  bindSubmitByEnter([phoneInput, codeInput], loginBtn);
 
   // ===== 登录 ↔ 注册 切换 =====
   document.getElementById('registerLink').addEventListener('click', () => { goPage('register'); });
   document.getElementById('loginLink').addEventListener('click', () => { goPage('login'); });
 
-  // ===== 注册页：获取验证码倒计时 =====
-  const regCodeBtn = document.getElementById('reg-code-btn');
-  const regPhoneInput = document.getElementById('reg-phone');
-  let regCountdown = 0;
-  let regCountdownTimer = null;
-
-  regCodeBtn.addEventListener('click', () => {
-    const phone = regPhoneInput.value.trim();
-    if (!/^1\d{10}$/.test(phone)) {
-      showToast('请输入正确的手机号');
-      return;
-    }
-    if (regCountdown > 0) return;
-    showToast('验证码已发送');
-    regCountdown = 60;
-    regCodeBtn.disabled = true;
-    regCodeBtn.textContent = regCountdown + 's后重发';
-    regCountdownTimer = setInterval(() => {
-      regCountdown--;
-      if (regCountdown <= 0) {
-        clearInterval(regCountdownTimer);
-        regCodeBtn.disabled = false;
-        regCodeBtn.textContent = '获取验证码';
-      } else {
-        regCodeBtn.textContent = regCountdown + 's后重发';
-      }
-    }, 1000);
-  });
-
   // ===== 注册 =====
-  const regBtn = document.getElementById('reg-btn');
-  const regCodeInput = document.getElementById('reg-code');
-  const regAgreeCheck = document.getElementById('reg-agree');
+  var regCodeBtn = document.getElementById('reg-code-btn');
+  var regPhoneInput = document.getElementById('reg-phone');
+  var regCodeInput = document.getElementById('reg-code');
+  var regAgreeCheck = document.getElementById('reg-agree');
+  var regBtn = document.getElementById('reg-btn');
+  var regState = { sent: false, phone: '' };
 
-  regBtn.addEventListener('click', () => {
+  bindFieldClear(regPhoneInput);
+  bindFieldClear(regCodeInput);
+  bindCodeButton(regCodeBtn, regPhoneInput, regState);
+
+  if (regAgreeCheck && regAgreeCheck.addEventListener) {
+    regAgreeCheck.addEventListener('change', function () {
+      if (regAgreeCheck.checked) setAgreementError(false);
+    });
+  }
+
+  regBtn.addEventListener('click', function () {
+    if (!validateAccountForm(regPhoneInput, regCodeInput, regAgreeCheck, regState)) return;
     showToast('注册成功');
-    setTimeout(() => { goPage('home'); }, 500);
+    setTimeout(function () { goPage('home'); }, 600);
   });
+  bindSubmitByEnter([regPhoneInput, regCodeInput], regBtn);
 
   // ===== 第三方登录（登录页 + 注册页） =====
   function bindSocialLogin(btnId, platform) {

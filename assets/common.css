@@ -382,6 +382,21 @@
   .input-wrap:focus-within {
     border-color: #FF7A00;
   }
+  /* 校验失败状态：输入框标红，下方给出提示文字 */
+  .input-group.has-error .input-wrap {
+    border-color: #E5484D;
+  }
+  .input-error-text {
+    display: none;
+    margin-top: 6px;
+    padding-left: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #E5484D;
+  }
+  .input-group.has-error .input-error-text {
+    display: block;
+  }
   .input-prefix {
     font-size: 15px;
     color: #666;
@@ -528,6 +543,11 @@
   .agreement label a {
     color: #FF7A00;
     text-decoration: none;
+  }
+  /* 未勾选协议时提示 */
+  .agreement.error label,
+  .agreement.error label a {
+    color: #E5484D;
   }
 
   /* ===== Toast ===== */
